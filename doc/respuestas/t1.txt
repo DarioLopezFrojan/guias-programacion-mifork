@@ -1,0 +1,172 @@
+# TEMA 1. Clases y objetos
+
+## 1. ¿Cuáles son las cuatro características básicas de la programación orientada a objetos? Describe brevemente cada una
+
+### Respuesta
+
+En el paradigma de la Programación Orientada a Objetos, el diseño de software se aleja del flujo secuencial de funciones de C para centrarse en unidades autónomas denominadas objetos. A diferencia de una struct tradicional, donde los datos están expuestos y las funciones externas los manipulan, aquí se busca que la información y su lógica asociada residan en un mismo contenedor. Este cambio de mentalidad se fundamenta en cuatro pilares: la abstracción, el encapsulamiento, la herencia y el polimorfismo.
+
+La abstracción permite definir modelos simplificados de la realidad (clases), seleccionando solo los atributos y comportamientos necesarios para el programa y descartando detalles irrelevantes. Por otro lado, el encapsulamiento protege la integridad de esos datos al ocultar el estado interno del objeto; mientras que en C se accedería directamente a los campos de una estructura, en Java se utilizan métodos para interactuar con ellos de forma controlada. Esto actúa como una barrera de seguridad que evita modificaciones accidentales desde partes externas del código.
+
+La herencia facilita la creación de nuevas clases basadas en otras ya existentes, permitiendo que una clase "hija" adquiera automáticamente las propiedades de una "padre". Esto elimina la necesidad de duplicar código cuando se requieren estructuras similares con pequeñas variaciones, algo que en C suele resolverse de forma menos eficiente con múltiples versiones de una misma estructura. Finalmente, el polimorfismo otorga la capacidad de invocar un mismo nombre de método sobre diferentes objetos, logrando que cada uno reaccione según su naturaleza específica sin necesidad de usar condicionales complejos en el flujo principal.
+
+## 2. Cita cuatro lenguajes populares que permitan la programación orientada a objetos
+
+### Respuesta
+
+Dentro del ecosistema tecnológico actual, existen diversos lenguajes que han adoptado la Programación Orientada a Objetos (POO) como su eje central o como parte de su naturaleza multiparadigma. Para un programador con experiencia en C, el ejemplo más directo es C++, que surge precisamente como una extensión de C para añadir soporte a clases y objetos. Este lenguaje mantiene la eficiencia del manejo de memoria de bajo nivel, pero introduce la capacidad de encapsular datos y lógica en unidades autónomas.
+
+Otro referente fundamental es Java, diseñado desde sus inicios para ser estrictamente orientado a objetos. A diferencia de C, donde el programador gestiona manualmente la memoria mediante malloc y free, Java delega esta tarea a un recolector de basura automático. Es un lenguaje que fuerza el uso de clases para cualquier fragmento de código, eliminando la posibilidad de definir funciones globales fuera de un contenedor, lo que garantiza una estructura más modular y protegida.
+
+En el ámbito del desarrollo de aplicaciones móviles y sistemas empresariales, destaca Python. Aunque permite la programación procedural similar a la de C, su potencia reside en que todo en el lenguaje (números, cadenas, funciones) es tratado técnicamente como un objeto. Su sintaxis es más cercana al lenguaje humano, lo que facilita la implementación de jerarquías de herencia y polimorfismo de forma más ágil que en los lenguajes de tipado estático tradicionales.
+
+Finalmente, se debe mencionar C# (C-Sharp), desarrollado para el ecosistema de Microsoft. Comparte muchas similitudes sintácticas con C y Java, pero incluye características modernas para facilitar la comunicación entre diferentes componentes de software. Al igual que los anteriores, utiliza el concepto de clases como plantillas fundamentales para organizar el código, permitiendo una transición natural para quienes ya dominan la lógica de estructuras en lenguajes de tipo C.
+
+## 3. Los paradigmas anteriores a la POO, ¿Qué es la **programación estructurada**? y, todavía mejor, ¿Qué es la **programación modular**?
+
+### Respuesta
+
+La programación estructurada es el paradigma que define la base del lenguaje C y se fundamenta en la división de la lógica en bloques jerárquicos. A diferencia de las prácticas primitivas que utilizaban saltos incondicionales de código (el conocido goto), este enfoque se basa en tres estructuras de control fundamentales: la secuencia, la selección (como el if y el switch) y la iteración (bucles for y while). El objetivo principal es que el flujo de ejecución sea lineal y predecible, facilitando la lectura y el mantenimiento al evitar el código "espagueti".
+
+Por otro lado, la programación modular es una evolución técnica que consiste en dividir un programa en partes independientes denominadas módulos. En el contexto de C, esto se visualiza mediante el uso de diferentes archivos fuente (.c) y cabeceras (.h). Cada módulo agrupa funciones y datos relacionados que realizan una tarea específica, permitiendo que el programador oculte la implementación interna y solo exponga una interfaz pública a través de los prototipos de funciones.
+
+Mientras que la programación estructurada organiza el flujo interno de una función, la modularidad organiza la arquitectura global del sistema. Sin embargo, ambos paradigmas mantienen una separación clara entre los datos (las estructuras) y la lógica (las funciones). Esta es la diferencia clave con la POO: en los modelos anteriores, las funciones son las protagonistas que procesan datos pasivos, mientras que en la orientación a objetos, los datos y las funciones se fusionan en una sola entidad responsable de su propio estado.
+
+## 4. ¿Qué tres elementos definen a un objeto en programación orientada a objetos?
+
+### Respuesta
+
+Para comprender qué constituye un objeto en Java partiendo del conocimiento en C, se debe visualizar a este no solo como un bloque de memoria con datos, sino como una entidad dinámica. Un objeto se define mediante tres elementos fundamentales: su estado, su comportamiento y su identidad.
+
+El estado representa el conjunto de datos o características que posee el objeto en un momento determinado. En términos de C, esto equivale a los valores almacenados en los campos de una struct. Estos datos se definen mediante variables denominadas "atributos". Por ejemplo, si se tiene un objeto de la clase Coche, su estado vendría dado por los valores actuales de sus variables internas, como la velocidad (80 km/h) o el nivel de combustible (40%).
+
+El comportamiento se refiere a las acciones o funciones que el objeto puede realizar y que suelen alterar su estado interno. En la programación estructurada, se pasaría un puntero de la estructura a una función externa; en cambio, en la POO, estas funciones (llamadas "métodos") pertenecen al propio objeto. Siguiendo el ejemplo anterior, un objeto Coche tendría comportamientos como acelerar() o frenar(), los cuales modifican directamente su estado de velocidad de forma autónoma.
+
+Finalmente, la identidad es lo que permite distinguir a un objeto de otro, incluso si ambos tienen el mismo estado (mismos valores en sus atributos). En el bajo nivel de C, esto se asemeja a la dirección de memoria única que devuelve malloc. Dos objetos pueden ser idénticos en sus datos, pero cada uno ocupa un lugar distinto en la memoria del sistema, permitiendo que el programa interactúe con cada instancia de manera independiente sin confusiones.
+
+## 5. ¿Qué es una clase? ¿Es lo mismo que un objeto? ¿Qué es una instancia? ¿Todos los lenguajes orientados a objetos manejan el concepto de clase?
+
+### Respuesta
+
+Para un programador de C, una clase debe entenderse como el molde o la plantilla de diseño, equivalente a la definición de una struct pero con esteroides. Mientras que en C una estructura solo define la disposición de los datos en memoria, una clase en Java define tanto esos datos (atributos) como las funciones que los manipulan (métodos). Es un concepto puramente teórico; la clase no ocupa espacio en la memoria RAM durante la ejecución del programa para almacenar datos específicos, sino que sirve como el plano arquitectónico que el compilador utiliza para saber cómo crear entidades futuras.
+
+Por el contrario, un objeto y una instancia son términos que se refieren a la realización física de esa plantilla. No es lo mismo que una clase: si la clase es el plano de una casa, el objeto es la casa construida con ladrillos y cemento. Técnicamente, cuando se utiliza el operador new en Java, se está creando una "instancia" de una clase. En el lenguaje de bajo nivel, esto equivale a reservar un bloque de memoria dinámica (como un malloc) con el tamaño exacto definido por la estructura de la clase y devolver una referencia para operar sobre ese bloque concreto.
+
+Respecto a la universalidad del concepto, no todos los lenguajes orientados a objetos manejan el concepto de clase. Aunque lenguajes como Java, C++ o C# son "basados en clases", existe otra rama denominada "programación orientada a objetos basada en prototipos", cuyo máximo exponente es JavaScript. En estos lenguajes no existe un molde previo, sino que se crean objetos nuevos clonando o extendiendo otros objetos ya existentes (prototipos), lo que ofrece una flexibilidad distinta al modelo rígido de plantillas de Java.
+
+## 6. ¿Dónde se almacenan en memoria los objetos? ¿Es igual en todos los lenguajes? ¿Qué es la **recolección de basura**? 
+
+### Respuesta
+
+En el contexto de Java, los objetos se almacenan de manera casi exclusiva en una región de la memoria dinámica denominada Heap (montón). Para un programador de C, esto es equivalente a la memoria que se gestiona mediante malloc. A diferencia de C, donde se pueden declarar estructuras en el Stack (pila) de forma local, en Java las variables locales solo almacenan referencias o "punteros inteligentes" que apuntan a la dirección real del objeto situada en el Heap.
+
+Esta gestión de memoria no es igual en todos los lenguajes de programación. En C++, por ejemplo, el programador tiene la libertad de elegir si un objeto reside en el Stack (creación automática) o en el Heap (usando new), lo que otorga un control granular sobre el rendimiento y el ciclo de vida. Sin embargo, lenguajes como Java o Python sacrifican parte de ese control en favor de la seguridad, obligando a que casi todos los objetos vivan en el Heap para facilitar su administración automática.
+
+La recolección de basura (Garbage Collection) es el mecanismo automático encargado de liberar la memoria del Heap que ya no está siendo utilizada. En C, si se reserva memoria y se pierde el puntero sin haber llamado a free, se produce una fuga de memoria (memory leak). En Java, el recolector de basura rastrea constantemente qué objetos ya no tienen ninguna referencia activa apuntando a ellos y, de forma periódica y autónoma, reclama ese espacio para el sistema sin que el programador tenga que intervenir.
+
+Este sistema elimina una de las fuentes de errores más comunes en la programación de bajo nivel: la liberación doble de memoria o el acceso a punteros colgantes. No obstante, esto introduce una pequeña sobrecarga de procesamiento, ya que el recolector debe ejecutarse en segundo plano, a diferencia de la liberación inmediata y explícita que se realiza en lenguajes como C o C++.
+
+## 7. ¿Qué es un método? ¿Qué es la **sobrecarga de métodos**? 
+
+### Respuesta
+
+Para un programador familiarizado con C, un método puede entenderse como una función que ha dejado de ser global para estar "atada" a una estructura de datos específica. Mientras que en la programación estructurada se definen funciones que reciben punteros a una struct para manipular sus datos, en Java las funciones se definen dentro del cuerpo de la clase. Esto permite que el método acceda directamente a los atributos del objeto sin necesidad de pasarlos como parámetros explícitos, ya que el método "sabe" que pertenece a esa instancia concreta.
+
+En esencia, los métodos definen el comportamiento de los objetos. En lugar de tener una función aislada como void acelerar(struct Coche *c), en Java se invoca directamente desde la instancia con la sintaxis miCoche.acelerar(). Técnicamente, esto refuerza el encapsulamiento, pues el código que utiliza el objeto solo necesita saber qué acciones puede realizar (el nombre del método), sin preocuparse por cómo se implementa la lógica internamente.
+
+La sobrecarga de métodos es una característica que no existe en C estándar y que permite definir varios métodos con el mismo nombre dentro de una misma clase, siempre y cuando su lista de parámetros sea distinta. El compilador de Java es capaz de distinguir cuál de ellos debe ejecutar basándose en el número, el tipo o el orden de los argumentos que se le pasan en la llamada. En C, si se quisieran dos funciones para imprimir datos, se tendrían que nombrar de forma distinta, como imprimirInt(int i) e imprimirFloat(float f).
+
+En Java, gracias a la sobrecarga, se pueden definir ambas como imprimir(int i) e imprimir(float f). Esto simplifica enormemente la interfaz de la clase, ya que el programador solo necesita recordar un nombre de acción genérico, y el lenguaje se encarga de seleccionar la implementación adecuada según los datos proporcionados. Es una herramienta fundamental para aumentar la legibilidad y la flexibilidad del código, permitiendo que un mismo comportamiento se adapte a diferentes tipos de entrada.
+
+## 8. Ejemplo mínimo de clase en Java, que se llame Punto, con dos atributos, x e y, con un método que se llame `calculaDistanciaAOrigen`, que calcule la distancia a la posición 0,0. Por sencillez, los atributos deben tener visibilidad por defecto. Crea además un ejemplo de uso con una instancia y uso del método
+
+### Respuesta
+
+Para implementar una clase en Java desde la base de C, se debe sustituir la estructura struct por la palabra reservada class. En este ejemplo, los atributos x e y actúan como las variables miembro de una estructura, pero con la diferencia de que el método calculaDistanciaAOrigen reside directamente dentro de la definición. Al no especificar modificadores de acceso como public o private, Java asigna la visibilidad por defecto, permitiendo que las variables sean accesibles por otras clases en el mismo paquete.El método utiliza la clase Math de Java para realizar operaciones matemáticas, de forma similar a como se usaría math.h en C. La fórmula aplicada es el teorema de Pitágoras: sqrt{x^2 + y^2}. A diferencia de una función en C, este método no necesita recibir el objeto como parámetro, ya que tiene acceso implícito a las variables x e y de la propia instancia que lo ejecuta.
+
+class Punto {
+    double x; // Atributo para la coordenada horizontal
+    double y; // Atributo para la coordenada vertical
+
+    // Método para calcular la distancia al origen (0,0)
+    double calculaDistanciaAOrigen() {
+        return Math.sqrt(x * x + y * y);
+    }
+}
+
+// Ejemplo de uso en un programa
+public class Principal {
+    public static void main(String[] args) {
+        // En C: struct Punto *p = malloc(sizeof(struct Punto));
+        Punto miPunto = new Punto(); 
+        
+        // Asignación de valores
+        miPunto.x = 3.0;
+        miPunto.y = 4.0;
+        
+        // Llamada al método
+        double distancia = miPunto.calculaDistanciaAOrigen();
+        
+        System.out.println("La distancia al origen es: " + distancia);
+    }
+}
+En el ejemplo de uso, se observa que para crear el objeto es imprescindible utilizar el operador new. Esto reserva la memoria necesaria en el heap y devuelve una referencia que se almacena en la variable miPunto. Una vez instanciado, se accede a sus atributos y métodos utilizando el operador punto (.), de forma idéntica a como se accedería a los miembros de una struct en C cuando no se utiliza un puntero flecha.
+
+## 9. ¿Cuál es el punto de entrada en un programa en Java? ¿Qué es `static` y para qué vale? ¿Sólo se emplea para ese método `main`? ¿Para qué se combina con `final`?
+
+### Respuesta
+
+El punto de entrada de cualquier aplicación en Java es el método public static void main(String[] args). Para un programador de C, este equivale a la función int main(), siendo el lugar donde el entorno de ejecución (JVM) inicia la secuencia de instrucciones. La firma debe ser exacta: public para ser accesible desde fuera, static para ejecutarse sin instanciar la clase, void porque no retorna valor al sistema operativo y un array de String para recibir argumentos por línea de comandos.
+
+La palabra clave static indica que un miembro (atributo o método) pertenece a la clase en sí y no a una instancia u objeto concreto. En C, las variables estáticas mantienen su valor entre llamadas; en Java, un atributo static es compartido por todos los objetos de esa clase: si un objeto lo modifica, el cambio es visible para todos los demás. Esto es útil para contadores globales o métodos de utilidad (como los de la clase Math) que no dependen del estado de un objeto particular.
+
+El uso de static no se limita al método main. Se emplea frecuentemente para crear constantes o funciones de biblioteca que deben estar disponibles sin necesidad de usar new. Cuando se combina con final, se obtiene el equivalente a las constantes definidas con #define o const en C. Una variable declarada como static final es una constante de clase cuyo valor se asigna una sola vez y no puede ser modificado durante la ejecución, garantizando que el dato sea inmutable y compartido.
+
+Esta combinación es fundamental para la eficiencia y seguridad del código. Por ejemplo, definir static final double PI = 3.14159; asegura que solo exista una copia de ese valor en memoria para todas las partes del programa y que nadie pueda alterarlo accidentalmente. Mientras que static gestiona "dónde y cuántas copias existen", final gestiona "la imposibilidad de cambiar el valor", permitiendo al compilador realizar optimizaciones similares a las que se obtienen en el desarrollo de bajo nivel en C.
+
+## 10. Intenta ejecutar un poco de Java de forma básica, con los comandos `javac` y `java`. ¿Cómo podemos compilar el programa y ejecutarlo desde linea de comandos? ¿Java es compilado? ¿Qué es la **máquina virtual**? ¿Qué es el *byte-code* y los ficheros `.class`?
+
+### Respuesta
+
+Para poner en marcha un programa en Java desde la línea de comandos, se requiere un proceso de dos pasos que difiere ligeramente del flujo tradicional en C. En primer lugar, se utiliza el compilador javac seguido del nombre del archivo fuente (por ejemplo, javac Principal.java), lo que genera un archivo con extensión .class. Posteriormente, para iniciar la ejecución, se emplea el comando java seguido únicamente del nombre de la clase (por ejemplo, java Principal), invocando así el punto de entrada main.
+
+Sobre la naturaleza del lenguaje, Java se considera un híbrido: es compilado e interpretado a la vez. A diferencia de C, donde el compilador genera un binario nativo directamente ejecutable por el procesador (como un .exe o un .out), javac traduce el código fuente a un lenguaje intermedio de bajo nivel conocido como bytecode. Este bytecode no es entendible por el hardware físico, sino que está diseñado para ser procesado por una capa de software adicional.
+
+La Máquina Virtual de Java (JVM) es precisamente ese entorno de software que actúa como un procesador imaginario. Su función es leer el bytecode almacenado en los ficheros .class y traducirlo en tiempo real a instrucciones que el sistema operativo y el hardware específicos (Windows, Linux, ARM, x86) puedan entender. Este mecanismo es el que permite la famosa "portabilidad" de Java: un archivo .class compilado en una máquina puede ejecutarse en cualquier otra que tenga instalada una JVM compatible, sin necesidad de recompilar el código fuente.
+
+El bytecode, por tanto, es el conjunto de instrucciones optimizadas que resultan del proceso de compilación. Mientras que en C la compilación es "al todo o nada" para una arquitectura específica, en Java el bytecode ofrece un equilibrio entre la velocidad de un lenguaje compilado y la flexibilidad de uno interpretado. Los ficheros .class son, en esencia, los contenedores de este bytecode, representando la unidad mínima de ejecución que la Máquina Virtual puede procesar para dar vida a las clases y objetos definidos por el programador.
+
+## 11. En el código anterior de la clase `Punto` ¿Qué es `new`? ¿Qué es un **constructor**? Pon un ejemplo de constructor en una clase `Empleado` que tenga DNI, nombre y apellidos
+
+### Respuesta
+
+
+## 12. ¿Qué es la referencia `this`? ¿Se llama igual en todos los lenguajes? Pon un ejemplo del uso de `this` en la clase `Punto`
+
+### Respuesta
+
+
+## 13. Añade ahora otro nuevo método que se llame `distanciaA`, que reciba un `Punto` como parámetro y calcule la distancia entre `this` y el punto proporcionado
+
+### Respuesta
+
+
+## 14. El paso del `Punto` como parámetro a un método, es **por copia** o **por referencia**, es decir, si se cambia el valor de algún atributo del punto pasado como parámetro, dichos cambios afectan al objeto fuera del método? ¿Qué ocurre si en vez de un `Punto`, se recibiese un entero (`int`) y dicho entero se modificase dentro de la función? 
+
+### Respuesta
+
+
+## 15. ¿Qué es el método `toString()` en Java? ¿Existe en otros lenguajes? Pon un ejemplo de `toString()` en la clase `Punto` en Java
+
+### Respuesta
+
+
+## 16. Reflexiona: ¿una clase es como un `struct` en C? ¿Qué le falta al `struct` para ser como una clase y las variables de ese tipo ser instancias?
+
+
+### Respuesta
+
+
+## 17. Quitemos un poco de magia a todo esto: ¿Como se podría “emular”, con `struct` en C, la clase `Punto`, con su función para calcular la distancia al origen? ¿Qué ha pasado con `this`?
+
+### Respuesta
