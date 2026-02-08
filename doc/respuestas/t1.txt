@@ -140,33 +140,174 @@ El bytecode, por tanto, es el conjunto de instrucciones optimizadas que resultan
 
 ### Respuesta
 
+En el entorno de Java, la palabra reservada new es el operador de instanciación, cuya función principal es solicitar al sistema la reserva de memoria en el heap. Para un programador de C, su comportamiento es análogo a realizar un malloc(sizeof(struct Punto)), pero con una diferencia crítica: new no solo reserva el espacio físico, sino que además invoca automáticamente a una función especial de inicialización y devuelve una referencia segura al bloque de memoria creado.
+
+Esa función especial se denomina constructor. Se trata de un método que tiene el mismo nombre que la clase y carece de tipo de retorno (ni siquiera void). Su objetivo es garantizar que el objeto nazca en un estado válido, asignando valores a sus atributos en el momento preciso de su creación. Si en C era responsabilidad del programador limpiar la "basura" de la memoria tras un malloc, en Java el constructor asegura que los campos tengan los datos correctos desde el primer microsegundo de existencia del objeto.
+
+A continuación, se presenta el ejemplo de la clase Empleado con su respectivo constructor. Se observa cómo los parámetros recibidos se asignan a las variables internas de la clase mediante la palabra clave this, la cual funciona de forma similar al puntero this en C++ para evitar ambigüedades entre los nombres de los parámetros y los atributos:
+
+class Empleado {
+    String dni;
+    String nombre;
+    String apellidos;
+
+    // Constructor de la clase Empleado
+    Empleado(String dni, String nombre, String apellidos) {
+        this.dni = dni;
+        this.nombre = nombre;
+        this.apellidos = apellidos;
+    }
+}
+
+// Ejemplo de uso:
+// Empleado e = new Empleado("12345678A", "Juan", "Pérez García");
+Este bloque de código permite que, al ejecutar la instrucción new Empleado(...), se realicen tres pasos atómicos: la reserva de memoria, la ejecución de la lógica interna del constructor para rellenar el DNI y los nombres, y finalmente la entrega de la dirección de memoria a la variable correspondiente. De este modo, se evita tener objetos "vacíos" o con datos inconsistentes en el programa.
 
 ## 12. ¿Qué es la referencia `this`? ¿Se llama igual en todos los lenguajes? Pon un ejemplo del uso de `this` en la clase `Punto`
 
 ### Respuesta
 
+La referencia this es un puntero implícito que todo objeto tiene hacia sí mismo. En el contexto de Java, se utiliza dentro de los métodos o constructores para referenciar al objeto específico que está ejecutando el código en ese momento. Para un programador de C, es comparable a pasar automáticamente la dirección de memoria de una estructura a una función; this permite al lenguaje saber exactamente qué instancia de la clase debe modificarse cuando existen múltiples objetos del mismo tipo en memoria.
+
+Este concepto existe en la gran mayoría de los lenguajes orientados a objetos, aunque su nombre puede variar según la sintaxis. En C++ y C# se utiliza exactamente el mismo término, this. Sin embargo, en lenguajes como Python, se utiliza por convención el nombre self como primer parámetro de cada método, y en Smalltalk o Ruby se emplea la palabra self. Independientemente del nombre, la función técnica es idéntica: resolver la ambigüedad y permitir el acceso a los miembros de la instancia actual.
+
+Un uso fundamental de this ocurre cuando los nombres de los parámetros de un método son idénticos a los nombres de los atributos de la clase. En el siguiente ejemplo de la clase Punto, se utiliza this para diferenciar el atributo de la clase de la variable local recibida en el constructor. Sin el uso de this, el compilador asumiría que se está intentando asignar la variable local a sí misma, ignorando el campo de la clase.
+
+class Punto {
+    double x; // Atributo de la clase
+    double y; // Atributo de la clase
+
+    // El uso de 'this' permite distinguir el atributo del parámetro
+    Punto(double x, double y) {
+        this.x = x; // "A la x de este objeto, asígnale el valor del parámetro x"
+        this.y = y; // "A la y de este objeto, asígnale el valor del parámetro y"
+    }
+}
+Además de resolver conflictos de nombres, this puede emplearse para pasar el objeto actual como argumento a otros métodos o para invocar un constructor desde otro dentro de la misma clase (sobrecarga de constructores). Es una herramienta de precisión que garantiza que el flujo de datos se mantenga dentro del ámbito correcto de la instancia, evitando errores de lógica al manipular el estado del objeto.
 
 ## 13. Añade ahora otro nuevo método que se llame `distanciaA`, que reciba un `Punto` como parámetro y calcule la distancia entre `this` y el punto proporcionado
 
 ### Respuesta
 
+Para implementar el método distanciaA, se debe aplicar la fórmula de la distancia euclidiana entre dos puntos en un plano bidimensional: sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}. En este contexto, las coordenadas del primer punto ($x_1, y_1$) corresponden a las de la instancia actual del objeto, accedidas mediante la referencia this. Las coordenadas del segundo punto ($x_2, y_2$) se obtienen del objeto Punto que se recibe como argumento en el método.Este diseño ejemplifica una de las diferencias clave con C: en lugar de una función global que recibe dos estructuras, se utiliza un método que "vive" en un punto y "mira" hacia otro. Al pasar un objeto como parámetro en Java, se está pasando técnicamente una referencia (un puntero gestionado), lo que permite al método acceder a los atributos del segundo punto para realizar el cálculo sin necesidad de copiar toda la estructura de datos.
+class Punto {
+    double x;
+    double y;
+
+    Punto(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    // Método que calcula la distancia entre 'this' y otro objeto Punto
+    double distanciaA(Punto otroPunto) {
+        double diferenciaX = otroPunto.x - this.x;
+        double diferenciaY = otroPunto.y - this.y;
+        
+        return Math.sqrt(diferenciaX * diferenciaX + diferenciaY * diferenciaY);
+    }
+}
+
+// Ejemplo de uso:
+// Punto p1 = new Punto(0, 0);
+// Punto p2 = new Punto(3, 4);
+// double d = p1.distanciaA(p2); // Retornará 5.0
+En el código se observa que, aunque los atributos x e y del objeto otroPunto pertenecen a una instancia distinta, el método puede acceder a ellos directamente. Esto se debe a que, en Java, la visibilidad de los miembros se gestiona a nivel de clase: cualquier método de la clase Punto puede acceder a los atributos de cualquier instancia de la misma clase. Esta aproximación facilita la interacción entre objetos de la misma naturaleza de forma limpia y eficiente.
 
 ## 14. El paso del `Punto` como parámetro a un método, es **por copia** o **por referencia**, es decir, si se cambia el valor de algún atributo del punto pasado como parámetro, dichos cambios afectan al objeto fuera del método? ¿Qué ocurre si en vez de un `Punto`, se recibiese un entero (`int`) y dicho entero se modificase dentro de la función? 
 
 ### Respuesta
 
+Para un programador de C, la gestión de parámetros en Java puede resultar confusa al principio, pero se rige por una regla única: todo se pasa por valor. Sin embargo, es crucial distinguir qué es exactamente lo que se está "copiando" según el tipo de dato. Cuando se pasa un objeto como Punto, lo que se copia no es el contenido de la estructura, sino la referencia (la dirección de memoria) que apunta a dicho objeto.
+
+En la práctica, esto se comporta como pasar un puntero en C. Si dentro del método se accede a un atributo del punto recibido y se modifica (por ejemplo, otroPunto.x = 10), el cambio afecta al objeto original fuera del método. Esto ocurre porque tanto la variable original como la copia local del parámetro apuntan a la misma dirección de memoria en el heap. Por tanto, cualquier alteración del estado interno del objeto será visible globalmente.
+
+Por el contrario, cuando se recibe un tipo primitivo como un int, la situación cambia. En este caso, Java copia el valor numérico real en una nueva variable local dentro del stack de la función. Si este entero se modifica dentro del método, dicho cambio no afecta en absoluto a la variable original externa. Es exactamente igual a pasar un int por valor en C; la función trabaja sobre una copia aislada que desaparece al finalizar la ejecución del bloque.
+
+En resumen, aunque técnicamente Java siempre hace una copia (un paso por valor), el resultado depende de si lo copiado es un dato simple o un puntero a un objeto. Esta distinción es vital para evitar efectos secundarios no deseados al manipular objetos complejos, algo que en C se gestionaría explícitamente decidiendo si pasar el dato directamente o mediante el operador de dirección &.
 
 ## 15. ¿Qué es el método `toString()` en Java? ¿Existe en otros lenguajes? Pon un ejemplo de `toString()` en la clase `Punto` en Java
 
 ### Respuesta
 
+El método toString() es una función especial en Java que tiene como objetivo devolver una representación en forma de cadena de texto (String) del estado de un objeto. Por defecto, todas las clases en Java heredan este método, pero su implementación original suele devolver información poco útil para el programador, como el nombre de la clase seguido de su dirección de memoria en formato hexadecimal. Por ello, la práctica estándar consiste en "sobrescribirlo" para que devuelva los valores reales de los atributos, facilitando tareas de depuración o la impresión de datos mediante System.out.println().
+
+Este concepto de representación textual automática es común en la mayoría de los lenguajes de alto nivel modernos. En Python, por ejemplo, se utiliza el método especial __str__ para el mismo fin, mientras que en C# existe el método ToString() (con mayúscula). Para un programador de C, esto elimina la necesidad de crear funciones manuales como void imprimirPunto(struct Punto p), ya que el propio lenguaje invoca al método toString() siempre que se intenta tratar al objeto como una cadena de texto.
+
+A continuación, se muestra cómo se implementaría en la clase Punto para que muestre las coordenadas en un formato legible. Se utiliza la anotación @Override, que le indica al compilador que se está reemplazando la versión por defecto del método por una personalizada:
+
+Java
+class Punto {
+    double x;
+    double y;
+
+    Punto(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    @Override
+    public String toString() {
+        return "Punto(x=" + this.x + ", y=" + this.y + ")";
+    }
+}
+
+// Ejemplo de uso:
+// Punto p = new Punto(5, 10);
+// System.out.println(p); // Imprimirá: Punto(x=5.0, y=10.0)
+Como se observa en el ejemplo de uso, al pasar el objeto p directamente a System.out.println(), Java detecta que se requiere una cadena y llama automáticamente al método toString(). Esto simplifica enormemente el código, permitiendo visualizar el estado de las estructuras de datos de manera inmediata y estandarizada, algo que en C requeriría llamadas explícitas a printf con múltiples especificadores de formato.
 
 ## 16. Reflexiona: ¿una clase es como un `struct` en C? ¿Qué le falta al `struct` para ser como una clase y las variables de ese tipo ser instancias?
 
 
 ### Respuesta
 
+Desde una perspectiva técnica, se puede afirmar que una clase es la evolución conceptual de un struct de C. En esencia, ambos sirven como plantillas para organizar datos relacionados en un bloque contiguo de memoria. Sin embargo, en C, la estructura es un contenedor pasivo que solo posee estado (datos), mientras que la clase en Java es una entidad activa que fusiona esos datos con su comportamiento (lógica).
+
+Para que un struct de C se transformara en una clase, le faltarían tres capacidades fundamentales:
+
+Inclusión de funciones (Métodos): En C, las funciones son entidades externas que reciben la estructura como argumento. Para ser una clase, la estructura debería poder contener los prototipos y las definiciones de las funciones dentro de sus propias llaves, permitiendo que estas operen sobre los datos internos de forma implícita.
+
+Modificadores de acceso (Encapsulamiento): Un struct tiene todos sus campos públicos por definición; cualquier parte del código puede alterar sus valores. Una clase requiere mecanismos como private o protected para prohibir el acceso directo a los datos, obligando a usar una interfaz controlada.
+
+Mecanismos de inicialización y destrucción automática: El struct carece de constructores. En C, tras reservar memoria con malloc, los campos contienen basura hasta que se asignan manualmente. Una clase garantiza que, al nacer el objeto, se ejecute código de configuración obligatoriamente.
+
+En cuanto a las variables, para que una variable de tipo struct sea considerada una instancia, debería dejar de ser una simple posición de memoria gestionada manualmente. En la POO, la instancia implica la existencia de una identidad única gestionada por el entorno de ejecución, que incluye metadatos sobre su tipo y un ciclo de vida controlado (como la recolección de basura). En C, el programador tiene el control total sobre los bytes; en Java, la instancia es un ciudadano de primera clase protegido por la Máquina Virtual.
 
 ## 17. Quitemos un poco de magia a todo esto: ¿Como se podría “emular”, con `struct` en C, la clase `Punto`, con su función para calcular la distancia al origen? ¿Qué ha pasado con `this`?
 
-### Respuesta
+### Respuesta                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+Para desmitificar el funcionamiento de una clase, se puede emular su comportamiento en C utilizando una struct y funciones que reciban explícitamente un puntero a dicha estructura. Dado que en C las funciones no pueden residir dentro de las estructuras, la solución técnica consiste en definir la struct Punto con sus datos y, por separado, una función cuyo primer argumento sea siempre la dirección de memoria de la estructura sobre la cual operar.
+
+En esta emulación, la función se definiría como double calculaDistanciaAOrigen(struct Punto *p). Al pasar el puntero *p, se está permitiendo que la función acceda a los campos x e y de una instancia concreta. En Java, esto ocurre de forma automática e invisible: el compilador añade ese puntero por nosotros y lo renombra como this. Por tanto, this no es más que un "parámetro oculto" que el lenguaje inyecta en todos los métodos para que estos sepan qué bloque de memoria deben consultar.
+
+C
+#include <stdio.h>
+#include <math.h>
+
+// Definición de la "clase" (la estructura de datos)
+struct Punto {
+    double x;
+    double y;
+};
+
+// Emulación del "método" (la lógica externa)
+// El parámetro 'struct Punto *this' es lo que Java hace automáticamente
+double calculaDistanciaAOrigen(struct Punto *this) {
+    return sqrt(this->x * this->x + this->y * this->y);
+}
+
+int main() {
+    // Emulación de 'new' (reserva de memoria e inicialización)
+    struct Punto miPunto;
+    miPunto.x = 3.0;
+    miPunto.y = 4.0;
+
+    // Emulación de la llamada al método: miPunto.calculaDistanciaAOrigen()
+    // En C debemos pasar explícitamente la dirección (&) del objeto
+    double d = calculaDistanciaAOrigen(&miPunto);
+
+    printf("Distancia: %f", d);
+    return 0;
+}
+Al observar este código, se percibe que la "magia" de la Orientación a Objetos en Java consiste principalmente en una simplificación sintáctica y organizativa. Mientras que en C el programador debe gestionar manualmente la relación entre la función y el dato pasando punteros, Java automatiza este proceso mediante la palabra clave this. Así, se garantiza que la lógica siempre esté vinculada a la instancia correcta, reduciendo la posibilidad de errores al manipular direcciones de memoria de forma manual.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
