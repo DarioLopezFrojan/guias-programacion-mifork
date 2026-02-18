@@ -236,7 +236,6 @@ Este concepto de representación textual automática es común en la mayoría de
 
 A continuación, se muestra cómo se implementaría en la clase Punto para que muestre las coordenadas en un formato legible. Se utiliza la anotación @Override, que le indica al compilador que se está reemplazando la versión por defecto del método por una personalizada:
 
-Java
 class Punto {
     double x;
     double y;

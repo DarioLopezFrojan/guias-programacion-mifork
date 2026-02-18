@@ -1,0 +1,230 @@
+<!--
+Posible prompt:
+<prompt>
+Tengo un cuestionario con preguntas sobre "Encapsulación". Debes tener en cuenta que los conocimientos previos que tengo (y por tanto tus respuestas deben ser adaptadas), son:
+- C/C++ sin orientación a objetos.
+- Temas de Java previos: Clases y Objetos.
+
+Cada respuesta debe tener entre 2 - 4 párrafos de longitud (sin contar los trozos de código).
+
+Por favor, escribe en impersonal las respuestas.
+
+</prompt>
+----
+-->
+# TEMA 2. Encapsulación
+
+## 1. En Programación Orientada a Objetos (POO), ¿Qué buscan la **encapsulación** y **la ocultación** de información? Enumera brevemente algunas ventajas de la ocultación de información.
+
+### Respuesta
+
+La encapsulación y la ocultación de información buscan, ante todo, la creación de módulos de software autónomos y seguros. Mientras que en C la estructura de datos (struct) y las funciones que la manipulan suelen estar separadas, en Java la encapsulación agrupa ambos elementos en una sola unidad: la clase. El objetivo principal es restringir el acceso directo a los componentes internos de un objeto, exponiendo únicamente lo que es estrictamente necesario para su uso externo.
+
+La ocultación de información complementa este concepto al establecer barreras de visibilidad. Se busca que el "estado" de un objeto (sus variables) no sea alterado de forma arbitraria o accidental por código externo. Esto garantiza que el objeto mantenga siempre un estado válido y coherente, obligando a cualquier interacción a realizarse a través de una interfaz controlada de métodos públicos.
+
+El uso de estas técnicas ofrece ventajas competitivas en el desarrollo de sistemas complejos. Entre las más destacadas se encuentran:
+
+Robustez e Integridad: Al impedir el acceso directo a los datos, se evita que valores inválidos corrompan el estado del objeto. Por ejemplo, se puede validar que una variable "edad" nunca sea negativa antes de asignarla.
+
+Facilidad de Mantenimiento: Los detalles internos de una clase pueden modificarse (cambiar un tipo de dato de int a long, por ejemplo) sin que el resto del programa se vea afectado, siempre que la interfaz de los métodos se mantenga constante.
+
+Reducción de la Complejidad: El programador que utiliza la clase no necesita conocer cómo está implementada internamente, sino solo qué funciones ofrece. Esto es similar al uso de librerías en C, donde se utiliza el .h sin necesidad de auditar el .c.
+
+Esta separación entre el "qué hace" un objeto y el "cómo lo hace" permite un desarrollo más escalable, minimizando los efectos secundarios y los errores en cadena que ocurren frecuentemente cuando los datos globales o las estructuras son manipuladas desde múltiples puntos del programa.
+
+## 2. ¿Qué se entiende por la **interfaz pública** de un objeto o clase en POO? Describe brevemente cómo se relaciona con la ocultación de información.
+
+### Respuesta
+
+La interfaz pública de una clase en Programación Orientada a Objetos se define como el conjunto de métodos y constantes que son accesibles desde el exterior de la propia clase. Mientras que en C la interfaz de un módulo suele estar representada por las firmas de las funciones en un archivo de cabecera (.h), en Java la interfaz pública de un objeto constituye el "contrato" que este ofrece a otros componentes del sistema. Es la única vía legítima de comunicación que permite interactuar con el objeto sin necesidad de conocer los detalles escabrosos de su implementación interna.
+
+Este concepto se manifiesta mediante el uso del modificador de acceso public en la declaración de métodos. Al diseñar una clase, se seleccionan cuidadosamente qué comportamientos deben ser visibles para el resto del programa, permitiendo que el objeto realice tareas específicas (como calcular un valor o actualizar un estado) de manera controlada. La interfaz pública actúa, por tanto, como una capa de abstracción que simplifica el uso del objeto, presentando una visión simplificada y funcional del mismo.
+
+La relación entre la interfaz pública y la ocultación de información es de complementariedad necesaria. Mientras la ocultación se encarga de proteger y esconder los atributos sensibles y la lógica compleja mediante el modificador private, la interfaz pública se encarga de exponer los puntos de entrada seguros. Se puede visualizar como la fachada de un cajero automático: el usuario interactúa con la pantalla y los botones (interfaz pública), pero el mecanismo de conteo de billetes y la caja fuerte permanecen ocultos y protegidos (información privada).
+
+Gracias a esta relación, se logra una independencia entre el uso y la implementación. Si en un futuro se decide optimizar un algoritmo interno o cambiar la estructura de datos que almacena la información, el código externo que utiliza la clase no sufrirá ningún impacto siempre y cuando la interfaz pública permanezca inalterada. Esto evita el "efecto dominó" de errores que suele ocurrir en C cuando se modifica una estructura de datos global que es accedida directamente desde múltiples archivos fuente.
+
+## 3. Brevemente: ¿Por qué hay que ser conscientes y diseñar con cuidado la **interfaz pública** de una clase? ¿Es fácil cambiarla?
+
+### Respuesta
+
+Diseñar con cuidado la interfaz pública es una tarea crítica porque esta constituye el "contrato" inamovible entre una clase y el resto del sistema. En lenguajes como C, cambiar la firma de una función en un archivo de cabecera (.h) obliga a revisar y recompilar todos los módulos que la invocan. En Java, la interfaz pública define las expectativas de los usuarios de la clase; si se exponen demasiados métodos o se diseñan de forma deficiente, se pierde el control sobre cómo otros programadores (o uno mismo en el futuro) interactúan con el objeto, aumentando la fragilidad del software.
+
+Una interfaz pública excesivamente amplia o mal planificada suele revelar detalles de la implementación interna que deberían haber permanecido ocultos. Esto genera un acoplamiento fuerte, donde el código externo depende de estructuras específicas que podrían necesitar cambios más adelante. Al diseñar con rigor, se busca ofrecer el conjunto mínimo y necesario de operaciones que permitan al objeto cumplir su función, manteniendo la máxima flexibilidad para alterar el código privado sin romper la funcionalidad general del programa.
+
+En cuanto a la facilidad de cambio, modificar una interfaz pública es una tarea compleja y costosa. Una vez que una clase ha sido integrada en un proyecto o distribuida en una librería, cualquier cambio en el nombre de un método público, en sus parámetros o en su tipo de retorno provocará errores de compilación en todo el código que dependa de ella. Este fenómeno se conoce como "romper la compatibilidad", y suele requerir un proceso tedioso de refactorización en múltiples archivos para adaptar las llamadas al nuevo formato.
+
+Por el contrario, cambiar la parte privada de una clase es sumamente sencillo, ya que el impacto está limitado estrictamente al interior de las llaves de esa clase. Esta asimetría es la que obliga a ser conservadores al declarar miembros como public. Mientras que siempre es posible transformar un método privado en público si surge la necesidad, realizar el camino inverso —intentar ocultar algo que ya se ha hecho público— es casi imposible sin generar un impacto negativo considerable en la estabilidad del sistema.
+
+## 4. ¿Qué son las **invariantes de clase** y por qué la ocultación de información nos ayuda?
+
+### Respuesta
+
+Las invariantes de clase son condiciones o reglas lógicas que deben cumplirse siempre para que un objeto se considere en un "estado válido". En términos de programación estructurada, equivaldrían a las restricciones que se asumen sobre los datos de una struct, como que un array de soporte no tenga un índice negativo o que un puntero no sea nulo. Una invariante define lo que es posible y coherente dentro del ciclo de vida de un objeto, desde que se construye hasta que se destruye, asegurando que su representación interna sea lógica.Por ejemplo, en una clase que gestione una Fecha, una invariante fundamental sería que el valor del mes debe estar siempre en el rango $[1, 12]$. Si en algún momento el atributo mes tomara el valor 13, la invariante se habría roto y el objeto dejaría de ser una representación fiable de la realidad. Mantener estas reglas es lo que permite que el resto del programa confíe en el comportamiento de la clase sin tener que verificar constantemente la validez de los datos que esta procesa.La ocultación de información es la herramienta esencial para proteger estas invariantes. Al declarar los atributos como private, se impide que el código externo modifique los datos directamente, evitando así que se asignen valores que violen las reglas de negocio. Si los atributos fueran públicos (como sucede habitualmente en las struct de C), cualquier parte del programa podría alterar el estado del objeto de forma accidental o malintencionada, rompiendo la coherencia interna del sistema sin que la propia clase pudiera evitarlo.Gracias a la ocultación, el control de las invariantes se centraliza en los métodos públicos (como los setters o el constructor). Estos métodos actúan como "porteros" que validan cualquier intento de cambio antes de que se produzca. Si un valor no cumple con la invariante, el método puede rechazar la operación o lanzar una excepción, garantizando así que el objeto nunca entre en un estado corrupto. Esta arquitectura simplifica enormemente la depuración, ya que si una invariante se rompe, el error debe encontrarse necesariamente dentro del código de la propia clase y no disperso por todo el proyecto.
+
+## 5. Pon un ejemplo de una clase `Punto` en `Java`, con dos coordenadas, `x` e `y`, de tipo `double`, con un método `calcularDistanciaAOrigen`, y que haga uso de la ocultación de información. ¿Cuál es la interfaz pública de la clase `Punto`? ¿Qué significa `public` y `private`?
+
+### Respuesta
+
+Para ilustrar los conceptos de ocultación e interfaz, se presenta la implementación de una clase Punto en Java. A diferencia de una struct en C, donde los campos x e y serían accesibles mediante el operador punto desde cualquier lugar, aquí se restringe su acceso para proteger la integridad del objeto. Los métodos get y set permiten interactuar con las coordenadas, ofreciendo un punto de control si en el futuro se deseara, por ejemplo, limitar el rango de los valores.
+
+public class Punto {
+    // Atributos privados: no accesibles desde fuera de esta clase
+    private double x;
+    private double y;
+
+    // Constructor público
+    public Punto(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    // Interfaz pública: métodos para interactuar con el objeto
+    public double getX() { return x; }
+    public void setX(double x) { this.x = x; }
+
+    public double getY() { return y; }
+    public void setY(double y) { this.y = y; }
+
+    public double calcularDistanciaAOrigen() {
+        return Math.sqrt(x * x + y * y);
+    }
+}
+La interfaz pública de esta clase está compuesta por el constructor Punto(double x, double y), los métodos de acceso getX(), setX(), getY(), setY() y el método de cálculo calcularDistanciaAOrigen(). Cualquier programador que utilice esta clase solo necesita conocer estos métodos para posicionar el punto o consultar su distancia al origen. Los detalles de cómo se almacenan las coordenadas o qué fórmula matemática exacta se emplea en el cálculo son internos; el usuario de la clase confía en el resultado que devuelve la interfaz.
+
+En cuanto a los modificadores de acceso, private actúa como un muro de seguridad. Al declarar x e y como privados, se garantiza que ninguna otra clase pueda ejecutar una instrucción como punto.x = 10;. Esto es fundamental para evitar efectos secundarios imprevistos. En C, si varias funciones modifican una variable global o un miembro de una estructura directamente, rastrear un error de valor incorrecto es difícil. En Java, al ser privados, si el valor de x es erróneo, se sabe con certeza que el problema reside únicamente dentro de los métodos de la clase Punto.
+
+Por otro lado, public define la visibilidad total. Un miembro marcado como público es una invitación a que otras partes del programa lo utilicen. Representa el compromiso de la clase con el mundo exterior. Es importante notar que, mientras los datos suelen ser privados para mantener el control, los métodos que definen el comportamiento suelen ser públicos para que el objeto sea útil. Esta combinación es la esencia de la encapsulación: datos protegidos y comportamiento expuesto.
+
+## 6. En Java, ¿A quiénes se pueden aplicar los modificadores `public` o `private`?
+
+### Respuesta
+
+En el lenguaje Java, los modificadores de acceso public y private tienen un alcance definido que permite estructurar la visibilidad tanto a nivel de componentes individuales como de estructuras organizativas. Se aplican principalmente a tres elementos: las clases, los atributos (variables de instancia o de clase) y los métodos (funciones). La elección de uno u otro determina qué partes del código pueden "ver" o "invocar" a estos elementos, funcionando de manera análoga a cómo se gestionan los archivos .h y .c para separar la interfaz de la implementación en C.
++1
+
+A nivel de clase, el modificador public permite que dicha clase sea utilizada por cualquier otra clase en cualquier paquete del proyecto. Es el nivel de visibilidad más alto y se utiliza para las clases que definen los tipos de objetos principales del sistema. Por el contrario, el modificador private no puede aplicarse a clases de "primer nivel" (las que definen el archivo), pero sí es fundamental en las clases internas o anidadas. Una clase privada dentro de otra sirve para encapsular una lógica de soporte que no debe ser conocida por nadie más que la clase que la contiene.
+
+En cuanto a los miembros de la clase (atributos y métodos), la aplicación de estos modificadores es el núcleo de la encapsulación. Los atributos se declaran generalmente como private para evitar que el estado interno del objeto sea manipulado directamente desde fuera, protegiendo así las invariantes de clase que se explicaron anteriormente. Los métodos, por su parte, pueden ser public si forman parte de la interfaz de servicios que el objeto ofrece, o private si son funciones de utilidad interna que ayudan a descomponer un algoritmo complejo sin exponer esos pasos intermedios al usuario de la clase.
+
+Finalmente, es importante mencionar que estos modificadores también se aplican a los constructores. Un constructor public permite crear instancias de la clase desde cualquier punto del programa. Sin embargo, existen patrones de diseño donde se declara un constructor como private para impedir que se creen objetos de esa clase de forma convencional (usando new), obligando a utilizar métodos de factoría específicos. Esta flexibilidad en la aplicación de modificadores es lo que otorga a Java su capacidad para construir sistemas robustos y con bajo acoplamiento.
+
+## 7. En POO, la visibilidad puede ser pública o privada, pero ¿existen más tipos de visibilidad? ¿Qué ocurre en Java? ¿Y en otros lenguajes?
+
+### Respuesta
+
+En la Programación Orientada a Objetos, la dicotomía entre lo público y lo privado es solo el principio. Para gestionar sistemas complejos con múltiples módulos, los lenguajes introducen niveles de visibilidad intermedios que permiten una colaboración más estrecha entre clases relacionadas sin llegar a exponer sus detalles al mundo entero. Estos niveles adicionales son fundamentales para el diseño de bibliotecas y marcos de trabajo (frameworks), donde ciertos componentes deben ser visibles para sus "parientes" o "vecinos", pero permanecer ocultos para el usuario final.
+
+En el caso específico de Java, además de public y private, existen otros dos niveles de visibilidad: protected y el acceso por defecto (a menudo llamado package-private). El modificador protected permite que un miembro sea accesible por las clases del mismo paquete y por cualquier subclase, incluso si esta se encuentra en un paquete diferente (un concepto clave cuando se estudia la Herencia). Por otro lado, si no se especifica ningún modificador, Java aplica el acceso por defecto, que restringe la visibilidad únicamente a las clases que residen en el mismo paquete, funcionando como una "privacidad de grupo".
+
+Si se observa el panorama de otros lenguajes, las estrategias varían según la filosofía de diseño. En C++, que resulta familiar por su base en C, existen los mismos tres modificadores explícitos (public, private, protected), pero se añade el concepto de friend. Una clase o función "amiga" en C++ puede saltarse las restricciones de encapsulación y acceder a los miembros privados de otra clase. Esto ofrece una flexibilidad que Java evita para mantener una estructura más rígida y segura, donde las reglas de visibilidad son inviolables.
+
+Otros lenguajes modernos proponen enfoques distintos. Por ejemplo, en Python, la visibilidad es más una convención que una restricción técnica; se utiliza un guion bajo (_variable) para indicar que algo es privado, pero el lenguaje no impide su acceso por la fuerza. En Swift o Kotlin, existen modificadores como internal, que limitan la visibilidad al "módulo" o proyecto actual, permitiendo que todas las partes de una aplicación colaboren sin exponer su API a otras aplicaciones que utilicen la misma librería.
+
+## 8. Responde: Los miembros de instancia privados de un objeto están ocultos para (a) otras clases o (b) otras instancias, aunque sean de la misma clase. Pon un ejemplo añadiendo un método `calcularDistanciaAPunto(Punto otro)` y explica la respuesta.
+
+### Respuesta
+
+La respuesta correcta es la (a): otras clases. En Java, al igual que en la mayoría de los lenguajes de Programación Orientada a Objetos, la visibilidad de los miembros privados se define a nivel de clase, no a nivel de objeto (instancia). Esto significa que un objeto de la clase Punto tiene permiso para acceder a los atributos privados de cualquier otro objeto de la misma clase Punto. No se trata de una privacidad "individual" donde cada instancia es un búnker para las demás, sino de una privacidad "corporativa" donde todos los miembros de la misma estirpe comparten sus secretos.
+
+Este diseño es fundamental para operaciones que involucran a dos objetos del mismo tipo, como comparaciones de igualdad o cálculos geométricos. Si la privacidad fuera por instancia (opción b), un objeto no podría consultar los datos de otro para realizar una operación conjunta, lo que obligaría a exponer esos datos mediante métodos públicos, debilitando la encapsulación frente a clases ajenas.
+
+Para ilustrar este comportamiento, se añade el método solicitado a la clase Punto. En este ejemplo, se observa cómo el objeto actual (this) accede directamente a los atributos x e y del objeto otro, a pesar de que estos están marcados como private.
+
+public class Punto {
+    private double x;
+    private double y;
+
+    public Punto(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    // Método que interactúa con otra instancia de la misma clase
+    public double calcularDistanciaAPunto(Punto otro) {
+        // Se accede directamente a otro.x y otro.y aunque sean privados
+        double dx = this.x - otro.x;
+        double dy = this.y - otro.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+}
+La explicación de por qué esto funciona reside en la confianza técnica: dado que el código del método calcularDistanciaAPunto está escrito dentro de la clase Punto, se asume que el programador conoce perfectamente la estructura interna y las invariantes de esos datos. Por tanto, el compilador de Java permite que una instancia de Punto manipule la "maquinaria interna" de otra instancia de Punto. Sin embargo, si una clase Circulo intentara hacer lo mismo con otro.x, el compilador generaría un error, cumpliendo así con la ocultación frente a otras clases.
+
+## 9. ¿Qué son los métodos "getter" y "setter" en los lenguajes orientados a objetos?
+
+### Respuesta
+
+
+## 10. Cuando nos referimos a que la ocultación de información mejora la "seguridad" del programa, ¿nos referimos a que no pueda ser "hackeado"?
+
+### Respuesta
+
+
+## 11. ¿Qué diferencia hay entre **miembro de instancia** y **miembro de clase**? ¿Los miembros de clase también se pueden ocultar?
+
+### Respuesta
+
+
+## 12. Brevemente: ¿Tiene sentido que los constructores sean privados?
+
+### Respuesta
+
+
+## 13. ¿Cómo se indican los **miembros de clase** en Java? Pon un ejemplo, en la clase `Punto` definida anteriormente, para que incluya miembros de clase que permitan saber cuáles son los valores `x` e `y` máximos que se han establecido en todos los puntos que se hayan creado hasta el momento.
+
+### Respuesta
+
+
+## 14. Como sería un método factoría dentro de la clase `Punto` para construir un `Punto` a partir de dos coordenadas, pero que las redondee al entero más cercano. Escribe sólo el código del método, no toda la clase ¿Has usado `static`? 
+
+### Respuesta
+
+
+## 15. Cambia la implementación de `Punto`. En vez de dos `double`, emplea un array interno de dos posiciones, intentando no modificar la interfaz pública de la clase.
+
+### Respuesta
+
+
+## 16. Si un atributo va a tener un método "getter" y "setter" públicos, ¿no es mejor declararlo público? ¿Cuál es la convención más habitual sobre los atributos, que sean públicos o privados? ¿Tiene esto algo que ver con las "invariantes de clase"?
+
+### Respuesta
+
+
+## 17. ¿Qué significa que una clase sea **inmutable**? ¿qué es un método modificador? ¿Un método modificador es siempre un "setter"? ¿Tiene ventajas que una clase sea inmutable?
+
+### Respuesta
+
+
+## 18. ¿Es recomendable incluir métodos "setter" siempre y como convención?
+
+### Respuesta
+
+
+## 19. ¿La clase `String` en Java es mutable o inmutable? ¿Qué ocurre al concatenar dos cadenas? ¿Qué debemos hacer si vamos a hacer una operación que implique concatenar muchas veces para construir paso a paso una cadena muy larga?
+
+### Respuesta
+
+
+## 20. En POO ¿Cómo se comparan objetos de una misma clase? ¿Por su contenido o por su identidad? ¿Qué es el método equals en Java? ¿Qué hace por defecto? ¿Cómo se deben comparar dos cadenas en Java? 
+
+### Respuesta
+
+
+## 21. ¿Qué son las clases "wrapper" en un lenguaje de programación orientado a objetos? ¿Cómo se hace? ¿Es un proceso automático? ¿Qué ventajas tienen? ¿Todos los lenguajes orientados a objetos tienen tipos primitivos y necesitan wrappers? 
+
+### Respuesta
+
+
+## 22. ¿En POO qué es un **tipo de dato enumerado**? ¿En Java, un tipo de dato enumerado es una clase? ¿Qué ventajas tienen en términos de encapsulación los enumerados en Java?
+
+### Respuesta
+
+
+## 23. Crea un tipo enumerado en Java que se llame `Mes`, con doce posibles instancias y que además proporcione métodos para obtener cuántos días tiene ese mes, el ordinal de ese mes en el año (1-12), empleando atributos privados y constructores del tipo enumerado.
+
+### Respuesta
+
+
+## 24. Añade a la clase `Mes` del ejercicio anterior cuatro métodos para devolver si ese mes tiene algunos días de invierno, primavera, verano u otoño, indicando con un booleano el hemisferio (norte o sur, parámetro `enHemisferioNorte`). Es decir: `esDePrimavera(boolean esHemisferioNorte)`, `esDeVerano(boolean esHemisferioNorte)`, `esDeOtoño(boolean esHemisferioNorte)`, `esDeInvierno(boolean esHemisferioNorte)`
+
+### Respuesta
