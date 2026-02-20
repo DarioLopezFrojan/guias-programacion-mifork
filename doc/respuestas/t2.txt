@@ -154,41 +154,157 @@ La explicación de por qué esto funciona reside en la confianza técnica: dado 
 
 ### Respuesta
 
+Los métodos "getter" y "setter" (también conocidos como métodos de acceso y de mutación) son funciones públicas que actúan como intermediarios entre el mundo exterior y los atributos privados de una clase. En la programación en C, solía accederse a los campos de una struct directamente mediante el operador punto o flecha, lo que dejaba los datos expuestos. En Java, se sigue la convención de mantener los datos ocultos y proporcionar estos métodos para consultar (get) o modificar (set) el estado del objeto de forma controlada.
+
+Un método getter tiene como única misión devolver el valor de un atributo. Su estructura suele ser sencilla: no recibe parámetros y tiene un tipo de retorno coincidente con el dato que protege. Por otro lado, el método setter se encarga de asignar un nuevo valor al atributo; suele ser de tipo void y recibe un parámetro del tipo adecuado. Esta estructura permite que la clase mantenga un control absoluto sobre quién y cómo se consultan o alteran sus variables internas.
+
+La verdadera utilidad de estos métodos no es simplemente "envolver" una variable, sino permitir la validación y la abstracción. En un setter, se puede introducir lógica para evitar que el objeto entre en un estado inválido (por ejemplo, impedir que un salario sea negativo o que una fecha sea inexistente). En un getter, se podría devolver una copia del dato en lugar del dato original para evitar que cambios externos accidentales afecten al interior del objeto, algo que en C solía requerir una gestión manual y cuidadosa de punteros y memoria.
+
+Además, el uso de estos métodos permite cambiar la implementación interna sin romper el código que utiliza la clase. Por ejemplo, se podría tener un método getEdad() que, en lugar de devolver un número almacenado, lo calcule sobre la marcha a partir de una fecha de nacimiento. Para el usuario de la clase, la forma de obtener la edad no cambia, lo que demuestra cómo la combinación de encapsulación y métodos de acceso facilita enormemente el mantenimiento y la evolución del software a largo plazo.
 
 ## 10. Cuando nos referimos a que la ocultación de información mejora la "seguridad" del programa, ¿nos referimos a que no pueda ser "hackeado"?
 
 ### Respuesta
 
+Cuando se utiliza el término "seguridad" en el contexto de la encapsulación y la ocultación de información, no se hace referencia a la seguridad informática frente a ataques externos (como virus o hackeos), sino a la seguridad técnica y robustez del código. En C, por ejemplo, un programador puede modificar accidentalmente un puntero o una variable de una estructura desde cualquier parte del programa, lo que genera errores difíciles de localizar. En Java, la ocultación garantiza que los datos solo se alteren de la forma en que el autor de la clase lo previó, evitando "accidentes" de programación.
+
+Esta seguridad interna se traduce en la prevención de estados inconsistentes. Si una clase tiene el control total sobre sus variables, puede asegurar que ninguna otra parte del software introduzca valores lógicamente erróneos. Por tanto, el sistema es más seguro porque es menos propenso a fallos internos y comportamientos inesperados provocados por el acceso no autorizado a los detalles de implementación por parte de otros desarrolladores o módulos del mismo programa.
+
+Por el contrario, la seguridad frente a un "hackeo" (como una inyección de código o un desbordamiento de memoria) depende de muchos otros factores, como la gestión de la red, la validación de entradas de usuario y la arquitectura del sistema operativo. Aunque la encapsulación ayuda a que el código sea más limpio y fácil de auditar —lo cual es un primer paso para un software seguro—, marcar un atributo como private no impedirá, por sí solo, que un atacante experto explote una vulnerabilidad en la lógica de la aplicación o en la máquina virtual.
+
+En resumen, se habla de una "seguridad de diseño". Se busca crear componentes de software que sean resistentes a los errores humanos y al mal uso por parte de otros programadores. Al limitar el alcance de las variables y exponer solo una interfaz pública controlada, se reduce drásticamente la superficie de error, logrando que el mantenimiento del sistema sea mucho más predecible y estable a lo largo del tiempo.
 
 ## 11. ¿Qué diferencia hay entre **miembro de instancia** y **miembro de clase**? ¿Los miembros de clase también se pueden ocultar?
 
 ### Respuesta
 
+La distinción entre un miembro de instancia y un miembro de clase radica en a quién pertenece el dato o el comportamiento y cómo se gestiona en la memoria. Un miembro de instancia (el que se ha usado hasta ahora en los ejemplos) pertenece a un objeto específico creado con new. Si se tienen diez objetos de la clase Punto, existen diez copias diferentes de los atributos de instancia x e y. En C, esto sería equivalente a declarar múltiples variables de una misma struct: cada una ocupa su propio espacio de memoria y tiene sus propios valores.
+
+Por el contrario, un miembro de clase —identificado en Java por la palabra clave static— pertenece a la clase en sí y no a los objetos individuales. Solo existe una única copia de ese miembro para todos los objetos de esa clase, independientemente de cuántos se instancien. Es comparable a las variables globales en C que están limitadas al ámbito de un archivo (usando static en C), sirviendo para almacenar información compartida, como un contador de cuántos objetos se han creado o una constante matemática como PI.
+
+Respecto a la segunda cuestión, los miembros de clase también se pueden y deben ocultar. El hecho de que una variable sea static no implica que deba ser pública. De hecho, aplicar private static es una práctica común para proteger información que es común a toda la clase pero que no debe ser manipulada desde el exterior. Por ejemplo, una clase Banco podría tener un atributo private static double tasaInteres; este dato es compartido por todas las cuentas, pero solo puede ser modificado a través de un método público que valide si el cambio de tasa es legal.
+
+Ocultar miembros de clase permite mantener la misma seguridad y robustez que con los miembros de instancia. Si un atributo de clase fuera public static, cualquier parte del programa podría alterarlo, afectando instantáneamente a todos los objetos que dependen de él, lo que podría causar fallos masivos y difíciles de rastrear. Al usar la ocultación (modificadores de acceso) en elementos estáticos, se asegura que la "configuración global" de la clase se mantenga íntegra y bajo control.
 
 ## 12. Brevemente: ¿Tiene sentido que los constructores sean privados?
 
 ### Respuesta
 
+Aunque el propósito habitual de un constructor es ser llamado desde el exterior para crear nuevos objetos, declarar un constructor como private es una técnica avanzada y muy útil en Java. Al hacerlo, se impide que cualquier clase externa utilice el operador new para instanciar la clase, otorgando a la propia clase el control total sobre su creación. Este enfoque es común cuando se busca restringir el número de objetos permitidos o cuando la clase solo sirve como un contenedor de herramientas lógicas.
+
+Un escenario clásico para esta práctica es el Patrón Singleton, donde se garantiza que solo exista una única instancia de una clase en toda la ejecución del programa (por ejemplo, para gestionar una conexión a una base de datos). Al ser el constructor privado, la clase misma se encarga de crear su única instancia y proporcionarla a través de un método público. Otro uso frecuente se da en las clases de utilidad, como la clase Math de Java, que al contener solo métodos estáticos, bloquea su construcción para evitar un consumo innecesarios de memoria.
+
+Finalmente, los constructores privados permiten implementar Métodos de Factoría, que ofrecen una forma más descriptiva y segura de inicializar objetos. En lugar de exponer un constructor genérico, se pueden ofrecer métodos públicos con nombres claros que validen los datos antes de llamar internamente al constructor privado. Esto asegura que el objeto nazca siempre en un estado válido, reforzando las invariantes de clase que se discutieron anteriormente.
 
 ## 13. ¿Cómo se indican los **miembros de clase** en Java? Pon un ejemplo, en la clase `Punto` definida anteriormente, para que incluya miembros de clase que permitan saber cuáles son los valores `x` e `y` máximos que se han establecido en todos los puntos que se hayan creado hasta el momento.
 
 ### Respuesta
 
+Para indicar que un miembro pertenece a la clase y no a las instancias, se utiliza la palabra clave static. En Java, al añadir este modificador a un atributo o método, se crea un único espacio de memoria compartido por todos los objetos de ese tipo. Esto contrasta con el modelo de C donde cada instancia de una estructura tiene sus propios datos; aquí, el miembro estático actúa como una variable global pero encapsulada dentro del ámbito de la clase.
+
+En el siguiente ejemplo aplicado a la clase Punto, se han añadido dos atributos estáticos privados para registrar los valores máximos encontrados. Al ser privados, se respeta el principio de ocultación de información, y se proporcionan métodos estáticos públicos para consultar estos valores sin necesidad de referenciar a un objeto concreto.
+
+public class Punto {
+    private double x;
+    private double y;
+
+    // Miembros de clase (estáticos)
+    private static double maxX = Double.NEGATIVE_INFINITY;
+    private static double maxY = Double.NEGATIVE_INFINITY;
+
+    public Punto(double x, double y) {
+        this.x = x;
+        this.y = y;
+        actualizarMaximos(x, y);
+    }
+
+    private static void actualizarMaximos(double x, double y) {
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+    }
+
+    // Métodos de clase para consultar los máximos
+    public static double getMaxX() { return maxX; }
+    public static double getMaxY() { return maxY; }
+}
+
+Es importante notar que el método actualizarMaximos es llamado dentro del constructor, permitiendo que cada vez que se cree un nuevo "Punto", la clase actualice su estado global. Como se ha mencionado en respuestas anteriores, la seguridad se mantiene al declarar estos máximos como private, asegurando que nadie fuera de la clase pueda resetear o falsear estos registros históricos de forma arbitraria.
+
+Finalmente, para acceder a estos valores desde otra parte del código, no se utiliza el nombre de una variable de objeto, sino el nombre de la clase directamente, por ejemplo: Punto.getMaxX(). Este diseño permite centralizar información estadística o de configuración que es común a toda la entidad, facilitando la gestión de datos globales de una manera mucho más organizada y segura que mediante variables externas al estilo de C.
 
 ## 14. Como sería un método factoría dentro de la clase `Punto` para construir un `Punto` a partir de dos coordenadas, pero que las redondee al entero más cercano. Escribe sólo el código del método, no toda la clase ¿Has usado `static`? 
 
 ### Respuesta
 
+Para implementar un método factoría que redondee las coordenadas al entero más cercano, se debe utilizar obligatoriamente el modificador static. Esto se debe a que el método debe poder invocarse sobre la propia clase Punto para crear una instancia, antes de que el objeto siquiera exista. Sin el modificador static, el método pertenecería a la instancia y no podría usarse como un mecanismo de construcción externo.
+
+A continuación, se presenta el código del método factoría solicitado. Se asume que el constructor de la clase recibe los valores una vez procesados por la lógica de redondeo:
+
+public static Punto crearPuntoRedondeado(double x, double y) {
+    // Se redondean las coordenadas al entero más cercano
+    double xRedondeado = Math.round(x);
+    double yRedondeado = Math.round(y);
+    
+    // Se devuelve una nueva instancia usando el constructor
+    return new Punto(xRedondeado, yRedondeado);
+}
+El uso de static en este contexto permite que la interfaz pública de la clase sea más rica y expresiva. En lugar de obligar al usuario de la clase a realizar el redondeo manualmente antes de llamar al constructor (como ocurriría frecuentemente en C), se encapsula esa responsabilidad dentro de la propia clase. Esto garantiza que la lógica de "creación con redondeo" sea reutilizable y esté centralizada en un solo punto del código.
+
+Este patrón de diseño, combinado con un constructor privado, aseguraría que los puntos solo se puedan crear a través de métodos autorizados que validen o transformen los datos según las necesidades del sistema. Es una excelente muestra de cómo la ocultación y la exposición selectiva de métodos mejoran la robustez del software orientado a objetos frente al modelo de estructuras simples de la programación estructurada.
 
 ## 15. Cambia la implementación de `Punto`. En vez de dos `double`, emplea un array interno de dos posiciones, intentando no modificar la interfaz pública de la clase.
 
 ### Respuesta
 
+Para realizar este cambio, se sustituyen los atributos individuales x e y por un array de tipo double[] con tamaño dos. Lo fundamental en este ejercicio es que, a pesar de cambiar radicalmente la estructura interna de almacenamiento (la implementación), los métodos de la interfaz pública (getX, setX, calcularDistanciaAOrigen, etc.) permanecen idénticos en su firma. Esto demuestra la potencia de la encapsulación: el mundo exterior no percibe que los datos ahora residen en un array.
+
+A continuación se muestra cómo se reestructura la clase internamente. Los métodos públicos actúan ahora como traductores que dirigen las peticiones hacia las posiciones [0] y [1] del array privado:
+
+public class Punto {
+    // La implementación cambia: de dos variables a un array
+    private double[] coordenadas = new double[2];
+
+    public Punto(double x, double y) {
+        this.coordenadas[0] = x;
+        this.coordenadas[1] = y;
+    }
+
+    public double getX() {
+        return coordenadas[0];
+    }
+
+    public void setX(double x) {
+        this.coordenadas[0] = x;
+    }
+
+    public double getY() {
+        return coordenadas[1];
+    }
+
+    public void setY(double y) {
+        this.coordenadas[1] = y;
+    }
+
+    public double calcularDistanciaAOrigen() {
+        // La lógica interna cambia, pero el resultado es el mismo
+        return Math.sqrt(Math.pow(coordenadas[0], 2) + Math.pow(coordenadas[1], 2));
+    }
+}
+Esta capacidad de modificar la estructura interna sin afectar a los usuarios de la clase es lo que permite el mantenimiento a gran escala. En C, si se cambiaran dos variables double por un array dentro de una struct, todo el código que utilizara el operador punto (punto.x) dejaría de compilar inmediatamente. En Java, gracias a que el acceso está mediado por métodos, se ha podido refactorizar la clase de manera "transparente", manteniendo la compatibilidad total con el resto del sistema.
+
+Este ejemplo cierra el concepto de ocultación de información: al no haber permitido nunca el acceso directo a x e y, se ha ganado la libertad de eliminarlos y sustituirlos por un array. La interfaz pública funciona como un contrato que se ha respetado, permitiendo que la evolución del código sea segura y eficiente.
 
 ## 16. Si un atributo va a tener un método "getter" y "setter" públicos, ¿no es mejor declararlo público? ¿Cuál es la convención más habitual sobre los atributos, que sean públicos o privados? ¿Tiene esto algo que ver con las "invariantes de clase"?
 
 ### Respuesta
 
+Aunque parezca redundante tener métodos que simplemente leen o escriben un valor, declarar el atributo como public es una práctica desaconsejada porque rompe el control sobre el objeto. Si un atributo es público, cualquier parte del programa puede modificarlo en cualquier momento sin que la clase se entere. Al usar métodos, conservas la capacidad de añadir lógica en el futuro (como registrar quién cambió el dato o activar una alarma) sin tener que modificar todas las líneas de código donde se usa ese atributo.
+
+La convención más habitual y estricta en Java (y en la POO en general) es que todos los atributos deben ser private. Solo se exponen al exterior a través de métodos si es estrictamente necesario. Incluso si hoy el método setter solo asigna un valor, mantenerlo como intermediario protege la arquitectura del programa. Es mucho más fácil convertir un atributo privado en público que intentar privatizar un atributo público que ya está siendo usado por cientos de clases externas.
+
+Esto tiene una relación directa y vital con las invariantes de clase. El setter actúa como un "filtro de seguridad" que garantiza que el objeto nunca entre en un estado inválido. Si permites el acceso público, no puedes garantizar que la invariante se cumpla; por ejemplo, alguien podría asignar una edad negativa o un mes igual a 40. Al usar un setter privado, puedes incluir un bloque if que rechace valores absurdos, asegurando que la lógica interna de la clase siempre sea coherente.
+
+En conclusión, la ocultación no se trata solo de esconder datos, sino de centralizar la responsabilidad. Al delegar el acceso a los métodos, te aseguras de que la clase sea la única dueña de sus reglas de negocio. Esta disciplina facilita la depuración, ya que si un dato es incorrecto, solo tienes un lugar donde investigar: el método setter de la propia clase, y no todo el proyecto.
 
 ## 17. ¿Qué significa que una clase sea **inmutable**? ¿qué es un método modificador? ¿Un método modificador es siempre un "setter"? ¿Tiene ventajas que una clase sea inmutable?
 
