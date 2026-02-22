@@ -310,37 +310,149 @@ En conclusión, la ocultación no se trata solo de esconder datos, sino de centr
 
 ### Respuesta
 
+Una clase se considera inmutable cuando el estado de sus objetos no puede ser modificado después de su creación. En términos prácticos de Java, esto implica que todos sus atributos deben ser privados y, preferiblemente, declarados como final. Al no permitir cambios, se garantiza que el valor asignado durante la instanciación permanezca constante a lo largo de toda la vida útil del objeto, eliminando efectos secundarios inesperados.
+
+Un método modificador, comúnmente conocido como "mutador", es aquel diseñado para cambiar el valor de uno o varios atributos de un objeto. Aunque los "setters" (métodos que siguen la convención setNombreAtributo) son los modificadores más habituales, un método modificador no tiene por qué ser necesariamente un "setter". Cualquier método que altere el estado interno, como un método ingresarDinero() en una clase cuenta bancaria o un método limpiar() que resetee valores, actúa como un modificador sin seguir la nomenclatura estándar.
+
+Las ventajas de utilizar clases inmutables son significativas en el desarrollo de software robusto. Al ser objetos de "solo lectura", son intrínsecamente seguros para su uso en entornos con múltiples hilos de ejecución (thread-safe), ya que no hay riesgo de que un hilo modifique el dato mientras otro lo lee. Además, simplifican la depuración de errores, puesto que se tiene la certeza de que el objeto mantiene su integridad desde el momento en que fue construido.
+
+Para implementar una clase inmutable de forma estricta, se deben seguir reglas específicas:
+
+Declarar la clase como final para evitar que sea heredada y sus métodos sobrescritos.
+
+Hacer todos los campos private y final.
+
+No proporcionar métodos modificadores (mutadores).
+
+Si la clase contiene referencias a objetos mutables, realizar copias defensivas para evitar que se modifiquen desde el exterior.
 
 ## 18. ¿Es recomendable incluir métodos "setter" siempre y como convención?
 
 ### Respuesta
 
+No es recomendable incluir métodos "setter" de forma sistemática para todos los atributos de una clase. Aunque en muchos entornos de desarrollo y marcos de trabajo se sigue esta convención por defecto, la sobreutilización de "setters" puede vulnerar el principio de encapsulación. Si se permite que cualquier parte del programa modifique libremente el estado interno de un objeto, este pierde el control sobre sus propios datos, asemejándose más a una estructura struct de C que a un objeto robusto de Java.
+
+La decisión de incluir un "setter" debe basarse en la necesidad real de modificar ese dato tras la creación del objeto. En muchos casos, es preferible que los valores se asignen exclusivamente a través del constructor, manteniendo el objeto en un estado consistente y protegido. Si un atributo no necesita cambiar durante la vida útil del objeto, omitir el "setter" refuerza la integridad del modelo y previene errores accidentales de modificación en otras partes del código.
+
+Además, el uso de métodos modificadores específicos suele ser superior a la convención genérica de los "setters". En lugar de un simple setSaldo(double nuevoSaldo), es más semántico y seguro emplear métodos como ingresar(double cantidad) o retirar(double cantidad). Estos métodos permiten aplicar reglas de negocio y validaciones (como impedir saldos negativos) antes de realizar el cambio, algo que un "setter" genérico a menudo descuida por seguir una convención puramente mecánica.
+
+En conclusión, la convención de incluir "getters" y "setters" para todo es una práctica común pero que debe aplicarse con criterio técnico. Una buena arquitectura de clases prioriza la ocultación de la información y solo expone mecanismos de modificación cuando es estrictamente necesario para el comportamiento del sistema, favoreciendo siempre que sea posible la inmutabilidad o el control estricto sobre el estado del objeto.
 
 ## 19. ¿La clase `String` en Java es mutable o inmutable? ¿Qué ocurre al concatenar dos cadenas? ¿Qué debemos hacer si vamos a hacer una operación que implique concatenar muchas veces para construir paso a paso una cadena muy larga?
 
 ### Respuesta
 
+La clase String en Java es estrictamente inmutable. Esto significa que, una vez que se crea un objeto de tipo cadena, su contenido no puede ser alterado. Cualquier operación que parezca modificar el texto en realidad no cambia el objeto original, sino que genera una instancia completamente nueva en la memoria con el resultado de la transformación. Esta propiedad permite que Java gestione las cadenas de forma eficiente mediante el "String Pool", ahorrando memoria al compartir referencias a cadenas idénticas.
+
+Cuando se realiza la concatenación de dos cadenas, por ejemplo utilizando el operador +, el entorno de ejecución de Java no añade caracteres al final del objeto existente. En su lugar, se reserva un nuevo espacio de memoria lo suficientemente grande para albergar la combinación de ambas, se copian los caracteres de las dos fuentes y se devuelve la referencia al nuevo objeto. Si se tiene una referencia previa a la cadena original, esta seguirá apuntando al valor antiguo, demostrando que el estado del objeto inicial permanece intacto.
+
+Si el objetivo es construir una cadena muy larga mediante múltiples concatenaciones paso a paso (por ejemplo, dentro de un bucle), el uso sistemático de la clase String resulta extremadamente ineficiente. Debido a la inmutabilidad, cada iteración crearía un nuevo objeto intermedio, generando una enorme cantidad de basura en la memoria y degradando el rendimiento del programa. En estos escenarios, la práctica recomendada es utilizar la clase StringBuilder, la cual es mutable y permite modificar un búfer interno de caracteres sin crear objetos adicionales en cada paso.
+
+Para un uso profesional, se debe instanciar un StringBuilder, emplear su método .append() para ir agregando los fragmentos de texto y, finalmente, invocar el método .toString() para obtener el resultado definitivo. Este enfoque optimiza el uso de la memoria y el tiempo de procesamiento, especialmente cuando se trabaja con volúmenes de datos considerables o procesos repetitivos, manteniendo la elegancia y seguridad del código.
 
 ## 20. En POO ¿Cómo se comparan objetos de una misma clase? ¿Por su contenido o por su identidad? ¿Qué es el método equals en Java? ¿Qué hace por defecto? ¿Cómo se deben comparar dos cadenas en Java? 
 
 ### Respuesta
 
+En el paradigma de la Orientación a Objetos, la comparación de objetos puede abordarse desde dos perspectivas distintas: la identidad y el contenido. La identidad se refiere a si dos referencias apuntan exactamente a la misma posición de memoria (el mismo objeto físico), lo cual se verifica en Java mediante el operador ==. Por el contrario, la comparación por contenido busca determinar si dos objetos distintos poseen los mismos valores en sus atributos, lo que requiere una lógica de comparación específica definida dentro de la clase.
+
+El método equals(Object obj) es la herramienta estándar en Java para realizar comparaciones lógicas por contenido. Por defecto, la implementación heredada de la clase base Object se comporta de manera idéntica al operador ==, es decir, solo devuelve true si ambos objetos comparten la misma identidad en memoria. Para que este método sea útil en clases personalizadas (como una clase Usuario o Producto), el programador debe sobrescribir su comportamiento, definiendo qué campos deben coincidir para considerar que dos instancias son "iguales".
+
+En cuanto a la comparación de cadenas de texto (String), nunca debe utilizarse el operador == si el objetivo es verificar que los textos sean idénticos. Debido a la inmutabilidad y al manejo de memoria de Java, == podría devolver true en algunos casos por optimización del compilador (String Pool) y false en otros, generando errores impredecibles. La forma correcta y segura de comparar dos cadenas es invocar siempre el método str1.equals(str2), o bien str1.equalsIgnoreCase(str2) si se desea ignorar la diferencia entre mayúsculas y minúsculas.
 
 ## 21. ¿Qué son las clases "wrapper" en un lenguaje de programación orientado a objetos? ¿Cómo se hace? ¿Es un proceso automático? ¿Qué ventajas tienen? ¿Todos los lenguajes orientados a objetos tienen tipos primitivos y necesitan wrappers? 
 
 ### Respuesta
 
+En el paradigma de la Orientación a Objetos, la comparación de objetos puede abordarse desde dos perspectivas distintas: la identidad y el contenido. La identidad se refiere a si dos referencias apuntan exactamente a la misma posición de memoria (el mismo objeto físico), lo cual se verifica en Java mediante el operador ==. Por el contrario, la comparación por contenido busca determinar si dos objetos distintos poseen los mismos valores en sus atributos, lo que requiere una lógica de comparación específica definida dentro de la clase.
+
+El método equals(Object obj) es la herramienta estándar en Java para realizar comparaciones lógicas por contenido. Por defecto, la implementación heredada de la clase base Object se comporta de manera idéntica al operador ==, es decir, solo devuelve true si ambos objetos comparten la misma identidad en memoria. Para que este método sea útil en clases personalizadas (como una clase Usuario o Producto), el programador debe sobrescribir su comportamiento, definiendo qué campos deben coincidir para considerar que dos instancias son "iguales".
+
+En cuanto a la comparación de cadenas de texto (String), nunca debe utilizarse el operador == si el objetivo es verificar que los textos sean idénticos. Debido a la inmutabilidad y al manejo de memoria de Java, == podría devolver true en algunos casos por optimización del compilador (String Pool) y false en otros, generando errores impredecibles. La forma correcta y segura de comparar dos cadenas es invocar siempre el método str1.equals(str2), o bien str1.equalsIgnoreCase(str2) si se desea ignorar la diferencia entre mayúsculas y minúsculas.
 
 ## 22. ¿En POO qué es un **tipo de dato enumerado**? ¿En Java, un tipo de dato enumerado es una clase? ¿Qué ventajas tienen en términos de encapsulación los enumerados en Java?
 
 ### Respuesta
 
+Un tipo de dato enumerado (o enum) es una estructura que permite definir un conjunto fijo de constantes con nombre, representando una lista cerrada de opciones posibles para una variable. En la programación estructurada como C, los enum son esencialmente alias para valores enteros (int). Sin embargo, en la Programación Orientada a Objetos, un enumerado se utiliza para restringir los valores de un atributo a un dominio específico y controlado, evitando que se asignen datos arbitrarios o inválidos que no tengan sentido para la lógica del negocio.
+
+En Java, un tipo de dato enumerado es una clase especial. A diferencia de C, donde un enum es un tipo primitivo encubierto, en Java cada elemento del enumerado es una instancia de la clase Enum. Esto significa que los enumerados en Java pueden tener sus propios atributos, constructores y métodos. Al ser clases completas, permiten asociar información adicional a cada constante (por ejemplo, un código de error numérico asociado a un mensaje de texto) y definir comportamientos específicos mediante métodos.
+
+Desde la perspectiva de la encapsulación, los enumerados ofrecen ventajas críticas en cuanto a seguridad y robustez del código. Al utilizar un enum como tipo de un atributo, se garantiza el "Type Safety" (seguridad de tipos); el compilador impedirá que se asigne cualquier valor que no pertenezca a la lista definida. Esto elimina la necesidad de realizar validaciones manuales complejas dentro de los métodos "setter" para comprobar si un entero o una cadena de texto recibida es válida, ya que el propio sistema de tipos de Java actúa como filtro infranqueable.
+
+Además, los enumerados mejoran la legibilidad y el mantenimiento del estado interno de los objetos. Al encapsular la lógica de las opciones permitidas dentro de una estructura propia, se evita la dispersión de constantes mágicas (números o strings sueltos) por todo el código. Si en el futuro se requiere añadir una nueva opción o cambiar una regla asociada a una de ellas, el cambio se realiza de forma centralizada en la definición del enum, sin riesgo de romper la integridad de las clases que lo utilizan.
 
 ## 23. Crea un tipo enumerado en Java que se llame `Mes`, con doce posibles instancias y que además proporcione métodos para obtener cuántos días tiene ese mes, el ordinal de ese mes en el año (1-12), empleando atributos privados y constructores del tipo enumerado.
 
 ### Respuesta
 
+Para implementar el tipo enumerado Mes en Java, se define una estructura que va más allá de una simple lista de nombres. Al ser una clase especial, el enum permite declarar campos privados para almacenar el número de días y el orden cronológico. El constructor de un enumerado es privado por definición, lo que garantiza que solo las doce instancias declaradas existan en el sistema, manteniendo una encapsulación total sobre el dominio de los meses.
+
+A continuación se presenta la implementación técnica solicitada. Se observa cómo cada constante pasa sus valores específicos al constructor interno, y cómo se exponen estos datos mediante métodos de consulta ("getters") públicos, siguiendo las buenas prácticas de ocultación de información:
+
+public enum Mes {
+    ENERO(31, 1), FEBRERO(28, 2), MARZO(31, 3), ABRIL(30, 4),
+    MAYO(31, 5), JUNIO(30, 6), JULIO(31, 7), AGOSTO(31, 8),
+    SEPTIEMBRE(30, 9), OCTUBRE(31, 10), NOVIEMBRE(30, 11), DICIEMBRE(31, 12);
+
+    private final int numDias;
+    private final int orden;
+
+    // El constructor de un enum siempre es privado
+    private Mes(int numDias, int orden) {
+        this.numDias = numDias;
+        this.orden = orden;
+    }
+
+    public int getNumDias() {
+        return this.numDias;
+    }
+
+    public int getOrden() {
+        return this.orden;
+    }
+}
+En esta implementación, se ha marcado los atributos como final para reforzar la inmutabilidad de cada instancia del mes. Al utilizar este enumerado en otras partes del código, se elimina el riesgo de usar valores erróneos (como un mes 13 o un mes con -5 días), ya que el compilador solo permite el uso de las doce constantes definidas. Esto representa una mejora sustancial respecto a las macros #define o los int constantes de C.
+
+Es importante notar que, aunque este ejemplo usa un valor estático para febrero, en una aplicación real se podría añadir lógica adicional para manejar años bisiestos. Sin embargo, para cumplir con la estructura de un tipo enumerado puro y sus ventajas de encapsulación, este diseño es el estándar en la plataforma Java.
 
 ## 24. Añade a la clase `Mes` del ejercicio anterior cuatro métodos para devolver si ese mes tiene algunos días de invierno, primavera, verano u otoño, indicando con un booleano el hemisferio (norte o sur, parámetro `enHemisferioNorte`). Es decir: `esDePrimavera(boolean esHemisferioNorte)`, `esDeVerano(boolean esHemisferioNorte)`, `esDeOtoño(boolean esHemisferioNorte)`, `esDeInvierno(boolean esHemisferioNorte)`
 
 ### Respuesta
+
+Para completar la lógica de la clase Mes, se deben añadir métodos que encapsulen la determinación de las estaciones. Dado que las estaciones están invertidas entre ambos hemisferios, el uso de un parámetro booleano permite que el objeto responda dinámicamente según el contexto geográfico. Esta aproximación mantiene la lógica de negocio dentro del enumerado, evitando que el código que utiliza la clase tenga que conocer qué meses corresponden a cada estación.
+
+En la implementación, se asume una división simplificada de las estaciones por meses completos para mantener la claridad del ejemplo. El diseño propuesto utiliza el atributo orden (definido en el ejercicio anterior) para evaluar los rangos temporales. Al centralizar esta lógica mediante métodos públicos, se protege el estado interno y se ofrece una interfaz sencilla para el usuario de la clase, quien solo necesita consultar el estado de un mes específico sin preocuparse por los cálculos subyacentes.
+
+public boolean esDePrimavera(boolean enHemisferioNorte) {
+    if (enHemisferioNorte) {
+        return (orden >= 3 && orden <= 5); // Marzo, Abril, Mayo
+    } else {
+        return (orden >= 9 && orden <= 11); // Septiembre, Octubre, Noviembre
+    }
+}
+
+public boolean esDeVerano(boolean enHemisferioNorte) {
+    if (enHemisferioNorte) {
+        return (orden >= 6 && orden <= 8); // Junio, Julio, Agosto
+    } else {
+        return (orden == 12 || orden == 1 || orden == 2); // Dic, Ene, Feb
+    }
+}
+
+public boolean esDeOtoño(boolean enHemisferioNorte) {
+    if (enHemisferioNorte) {
+        return (orden >= 9 && orden <= 11);
+    } else {
+        return (orden >= 3 && orden <= 5);
+    }
+}
+
+public boolean esDeInvierno(boolean enHemisferioNorte) {
+    if (enHemisferioNorte) {
+        return (orden == 12 || orden == 1 || orden == 2);
+    } else {
+        return (orden >= 6 && orden <= 8);
+    }
+}
+Esta estructura demuestra cómo los enumerados en Java permiten añadir comportamiento complejo a constantes que en C serían meros enteros. Al encapsular esta lógica, cualquier cambio en la definición de las estaciones o la adición de nuevos criterios geográficos se realizaría únicamente dentro de la clase Mes, sin afectar al resto del sistema que dependa de estos métodos.
