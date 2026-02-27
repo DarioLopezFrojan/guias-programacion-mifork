@@ -1,0 +1,255 @@
+<!--
+Posible prompt:
+<prompt>
+Tengo un cuestionario con preguntas sobre "Excepciones". Debes tener en cuenta que los conocimientos previos que tengo (y por tanto tus respuestas deben ser adaptadas), son:
+- C/C++ sin orientación a objetos.
+- Temas de Java previos: Clases y Objetos, Encapsulación.
+
+Cada respuesta debe tener entre 2 - 4 párrafos de longitud (sin contar los trozos de código).
+
+Por favor, escribe en impersonal las respuestas.
+
+</prompt>
+----
+-->
+# TEMA 3. Excepciones
+
+## 1. Empecemos un tema sobre control de errores en lenguajes de programación, con algo básico. En C, donde no existen las excepciones, pongamos un ejemplo de una raíz que toma número flotante positivo. Queremos controlar el error si la función recibe un número negativo. El usuario debe ser informado pero desde fuera de la función `raiz` ¿Cómo indicamos ese error?. Enumera dos opciones diferentes de diseñar, poniendo un ejemplo de código de cada una.
+
+### Respuesta
+
+En el lenguaje C, al carecer de un mecanismo nativo de excepciones, el control de errores se delega habitualmente en el uso de valores de retorno especiales o en el paso de parámetros por referencia para señalizar estados anómalos. Cuando se desea que una función como raiz informe de un error sin detener la ejecución ni imprimir mensajes internos (manteniendo la lógica de control en el llamador), la estrategia más común consiste en reservar un valor de retorno que sea físicamente imposible como resultado válido de la operación.
+
+Opción 1: Retorno de un valor centinela
+Esta técnica utiliza un valor específico, como -1.0 o la constante NAN (Not a Number) de la librería math.h, para indicar que la operación no pudo realizarse. Es un método eficiente y directo, aunque obliga al programador que utiliza la función a recordar siempre la comprobación de dicho valor antes de procesar el resultado.
+
+C
+float raiz(float n) {
+    if (n < 0) {
+        return -1.0; // Valor centinela para indicar error
+    }
+    return sqrt(n);
+}
+
+// Uso desde fuera:
+float res = raiz(-5.0);
+if (res == -1.0) {
+    printf("Error: No se puede calcular la raíz de un negativo.");
+}
+Opción 2: Paso de un indicador de estado por referencia
+Una alternativa más robusta consiste en separar el resultado matemático del estado de error. Para ello, se añade un parámetro adicional a la función (usualmente un puntero a un entero o un booleano) que actúa como una "bandera" o código de estado. Este enfoque es preferible cuando todos los valores posibles del tipo de retorno son válidos y no se puede reservar ninguno como centinela.
+
+C
+float raiz(float n, int *error) {
+    if (n < 0) {
+        *error = 1; // Se activa la señal de error
+        return 0;
+    }
+    *error = 0; // Operación exitosa
+    return sqrt(n);
+}
+
+// Uso desde fuera:
+int err;
+float res = raiz(-5.0, &err);
+if (err != 0) {
+    printf("Error detectado mediante el parámetro de estado.");
+}
+
+## 2. Brevemente ¿Qué es una **"excepción"**? ¿Con qué objetivo las usa un programador cuando implementa funciones o cuando las llama?
+
+### Respuesta
+
+Una excepción se define como un evento que ocurre durante la ejecución de un programa y que interrumpe el flujo normal de sus instrucciones. A diferencia de un error de sintaxis, que se detecta al compilar, la excepción surge en tiempo de ejecución debido a condiciones imprevistas o inválidas, como una división por cero, el acceso a un índice de array inexistente o el intento de abrir un archivo que no existe. En lenguajes como Java, estas situaciones no se gestionan mediante valores de retorno especiales (como el -1 o el NULL de C), sino mediante objetos específicos que encapsulan la información sobre qué ha fallado y dónde.
+
+El objetivo principal de un programador al implementar funciones que lanzan excepciones es separar la lógica de negocio del manejo de errores. En el modelo de C, el código principal suele estar saturado de estructuras if-else para comprobar cada posible fallo tras cada llamada a función. Al utilizar excepciones, el programador puede escribir el "camino feliz" de la lógica sin interrupciones, agrupando la gestión de anomalías en un bloque dedicado. Esto mejora drásticamente la legibilidad y garantiza que un error no pase desapercibido, ya que, si una excepción no se captura, el programa se detiene de forma controlada en lugar de continuar con datos corruptos.
+
+Desde el punto de vista de quien llama a una función, el uso de excepciones ofrece un mecanismo de propagación automática. Si una función A llama a B y esta última encuentra un error, la excepción puede "viajar" hacia arriba en la pila de llamadas hasta encontrar a alguien capacitado para resolverla. Esto permite que el programador decida en qué nivel de la aplicación es más conveniente tratar el problema (por ejemplo, mostrando un mensaje al usuario en la interfaz) sin necesidad de que todas las funciones intermedias tengan que gestionar manualmente el paso de códigos de error.
+
+
+## 3. Reescribe el mismo ejemplo de raiz, pero en Java, metiendo ese método en una clase `Calculadora` y llama a dicho método desde el método `main`, mostrando cómo se puede controlar desde fuera.
+
+### Respuesta
+
+En Java, el control de errores se formaliza mediante la palabra reservada throw, que permite lanzar un objeto de excepción cuando se detecta una condición inválida. En el caso de la función raiz, en lugar de devolver un valor centinela como -1.0, se crea una instancia de IllegalArgumentException. Esta acción interrumpe inmediatamente la ejecución de la función y busca un bloque de control compatible en la pila de llamadas, enviando el flujo del programa hacia fuera del método.
+
+El bloque try-catch es la estructura fundamental para gestionar estas situaciones desde el exterior. El código que se desea ejecutar se encierra en la cláusula try, mientras que la lógica de respuesta ante el error se define en el catch. Si el método raiz lanza una excepción, el control salta directamente al bloque catch correspondiente, permitiendo que el programa informe del error y continúe su ejecución de forma segura, sin cerrarse inesperadamente.
+
+Java
+public class Calculadora {
+    // Definición del método que lanza la excepción
+    public double raiz(double n) {
+        if (n < 0) {
+            // Se lanza el error hacia fuera del método
+            throw new IllegalArgumentException("No se puede calcular la raíz de un número negativo.");
+        }
+        return Math.sqrt(n);
+    }
+
+    public static void main(String[] args) {
+        Calculadora calc = new Calculadora();
+        
+        try {
+            // Intento de ejecución normal
+            double resultado = calc.raiz(-5.0);
+            System.out.println("El resultado es: " + resultado);
+        } catch (IllegalArgumentException e) {
+            // Control del error desde fuera del método
+            System.out.println("Error capturado: " + e.getMessage());
+        }
+        
+        System.out.println("El programa continúa su ejecución normal.");
+    }
+}
+Este enfoque garantiza una separación clara entre la operación matemática y la gestión de la interfaz de usuario o los mensajes de error. Mientras que en C el programador podía olvidar revisar un código de retorno, en Java la excepción obliga a una gestión explícita o, de lo contrario, el programa se detiene, evitando que se propaguen cálculos erróneos basados en una raíz inexistente.
+
+## 4. ¿Qué es **"lanzar"** una excepción? ¿Qué es **"controlar"** o **"capturar"** una excepción? ¿Qué es que se **"propague"** una excepción? ¿Qué le va ocurriendo a las funciones en la pila de llamadas por donde se va propagando la excepción? ¿Las funciones que no la controlan se reanudan después de alguna forma? Explica con el mismo ejemplo anterior en Java de la raíz cuadrada.
+
+### Respuesta
+
+Lanzar una excepción es el acto de señalizar que ha ocurrido una condición anómala que el método actual no puede o no debe resolver. En Java, esto se realiza mediante la instrucción throw, la cual interrumpe la ejecución lineal del código y crea un objeto que contiene los detalles del error. En el ejemplo de la clase Calculadora, cuando el método raiz recibe un número negativo, "lanza" una IllegalArgumentException, delegando la responsabilidad de decidir qué hacer con ese fallo a quien haya invocado el método.
+
+Controlar o capturar una excepción consiste en interceptar ese objeto de error antes de que detenga el programa. Esto se logra mediante el bloque try-catch. El código propenso a fallar se sitúa en el try, y si se lanza una excepción, el control salta inmediatamente al bloque catch. Capturar la excepción permite al programador realizar una acción correctiva, como mostrar un mensaje de aviso o asignar un valor por defecto, evitando que la aplicación aborte inesperadamente.
+
+La propagación es el proceso por el cual una excepción viaja hacia atrás a través de la pila de llamadas (stack). Si el método raiz lanza un error y no tiene un bloque catch interno, la excepción "sale" de ese método y regresa al método que lo llamó (por ejemplo, main). Si main tampoco la captura, la excepción sigue subiendo hasta llegar a la Máquina Virtual de Java (JVM), que finalmente detendrá el programa y mostrará el error por consola.
+
+Es fundamental comprender que las funciones por las que se propaga la excepción no se reanudan. Cuando la excepción atraviesa un método sin ser capturada, dicho método finaliza abruptamente: se liberan sus variables locales y se saca de la pila de llamadas de forma inmediata. No hay retorno al punto donde se quedó la ejecución dentro de esa función; la única forma de que el programa continúe es que algún método superior en la jerarquía capture la excepción y tome el control.
+
+## 5. ¿Qué ventajas tiene frente a C, la **"propagación natural"** de las excepciones a través de la pila (*stack*) de llamadas?
+
+### Respuesta
+
+La propagación natural de las excepciones en Java ofrece una ventaja estructural decisiva sobre el modelo de C al automatizar el traslado del error. En C, si una función situada en el nivel cuarto de una jerarquía de llamadas detecta un fallo, cada una de las tres funciones superiores debe incluir lógica explícita (habitualmente sentencias if y return) para recibir ese código de error y volver a enviarlo hacia arriba. Este "paso manual de estafeta" ensucia el código con comprobaciones repetitivas que no aportan valor a la lógica de negocio y aumentan el riesgo de que un programador olvide gestionar el error en algún nivel intermedio.
+
+En contraste, el mecanismo de Java permite que la excepción "salte" automáticamente a través de la pila de llamadas hasta encontrar un bloque catch que sepa gestionarla. Las funciones intermedias que no tienen la responsabilidad de resolver el problema simplemente se ignoran y se cierran de forma limpia, sin necesidad de escribir ni una sola línea de código para propagar el fallo. Esto reduce drásticamente el volumen de código redundante y garantiza que un error nunca sea ignorado por accidente, ya que la propagación es el comportamiento por defecto del lenguaje.
+
+Otra ventaja fundamental es la separación de responsabilidades. En un diseño robusto, a menudo la función que detecta el error (como una lectura de disco o un cálculo matemático) no posee la información necesaria para decidir cómo informar al usuario. Gracias a la propagación natural, el error puede viajar hasta la capa de interfaz de usuario, donde reside el contexto adecuado para mostrar un mensaje o pedir reintentar la operación. En C, lograr esta separación requiere diseñar estructuras de datos complejas para acarrear el estado del error a través de múltiples firmas de funciones.
+
+Finalmente, este sistema facilita un mantenimiento del código mucho más sencillo. Al centralizar el manejo de errores en puntos estratégicos de la aplicación, el programador puede modificar la lógica de respuesta ante un fallo sin tener que alterar todas las funciones que se encuentran en la ruta de ejecución. Esta arquitectura "limpia" permite que el flujo principal de instrucciones sea legible y directo, mientras que la infraestructura de excepciones se encarga de la gestión de anomalías de manera transparente y jerárquica.
+
+## 6. En orientación a objetos, ¿las excepciones suelen ser objetos? ¿Qué ventajas tiene esto en términos de encapsulación? ¿Podemos entonces crear excepciones personalizadas?
+
+### Respuesta
+
+Efectivamente, en el paradigma de la orientación a objetos, las excepciones son objetos. En Java, toda excepción es una instancia de una clase que desciende, en última instancia, de la clase base Throwable. Al ser objetos, las excepciones no son meros códigos numéricos o mensajes de texto volátiles; son entidades completas que poseen un estado (atributos) y un comportamiento (métodos). Esta naturaleza permite que, al lanzarse un error, se capture no solo el hecho de que algo falló, sino un "paquete" de información estructurada sobre las circunstancias exactas del evento.
+
+La ventaja principal en términos de encapsulación es que la excepción puede transportar datos complejos de manera privada y protegida. Mientras que en C un error suele reducirse a un int, una excepción-objeto puede contener el sello de tiempo del error, el nombre del usuario que ejecutó la acción, el estado de una base de datos o incluso una referencia al objeto que causó el conflicto. Toda esta información está organizada dentro de la clase de la excepción, exponiendo solo lo necesario mediante métodos como getMessage() o printStackTrace(), lo que mantiene la integridad del sistema de diagnóstico.
+
+Gracias a este sistema de clases, es totalmente posible y recomendable crear excepciones personalizadas. Si las excepciones estándar de Java (como IllegalArgumentException o NullPointerException) no describen con precisión un problema de la lógica de negocio, se puede definir una nueva clase que se ajuste a la necesidad específica. Por ejemplo, en una aplicación bancaria, se podría crear una clase SaldoInsuficienteException. Para implementarla, simplemente se define una nueva clase que herede de una clase de excepción existente, permitiendo que el programador añada atributos específicos, como el "monto faltante".
+
+Java
+// Ejemplo de excepción personalizada
+public class SaldoInsuficienteException extends RuntimeException {
+    private double faltante;
+
+    public SaldoInsuficienteException(double faltante) {
+        super("No hay saldo suficiente para la operación.");
+        this.faltante = faltante;
+    }
+
+    public double getFaltante() {
+        return faltante;
+    }
+}
+
+## 7. En relación con las ventajas de la encapsulación, comparando el ejemplo en C con Java. ¿Qué **información esencial** lleva cualquier **objeto excepción** que es muy útil tener cuando se llega a un manejador?
+
+### Respuesta
+
+A diferencia de los códigos de error numéricos de C, que solo indican "qué" falló de forma genérica (como un -1), un objeto excepción en Java encapsula información contextual crítica de manera automática. El dato más valioso que transporta es la traza de la pila o stack trace. Este registro permite conocer la secuencia exacta de llamadas a funciones que condujeron al error, detallando el nombre de cada método, el archivo fuente y el número de línea específico donde se originó el problema. En C, obtener esta información requeriría herramientas externas de depuración o una implementación manual muy compleja de registros de auditoría.
+
+Además de la ubicación del fallo, el objeto excepción incluye un mensaje descriptivo y el tipo específico de la excepción (su clase). Al ser un objeto, el manejador o bloque catch recibe una instancia con un nombre de clase significativo, como FileNotFoundException, lo que permite una clasificación inmediata del error sin necesidad de consultar manuales de códigos de retorno. El mensaje interno suele ofrecer detalles dinámicos, como el nombre del archivo que no se pudo abrir o el valor exacto que causó un desbordamiento, proporcionando una claridad semántica que un simple entero no puede ofrecer.
+
+Otra ventaja fundamental de la encapsulación en estos objetos es la capacidad de contener excepciones encadenadas o causas raíz. En sistemas complejos, un error en una capa baja (como un fallo de red) puede provocar un error en una capa superior (como un fallo en el guardado de un perfil). El objeto excepción permite almacenar la excepción original dentro de la nueva, manteniendo la historia completa del incidente. Esto facilita que el programador en el nivel de control final comprenda no solo que la operación falló, sino la reacción en cadena exacta que lo provocó.
+
+Por último, al ser una estructura de datos extensible, se pueden añadir atributos personalizados según la lógica del programa. Mientras que en C la información extra suele pasarse mediante variables globales poco seguras o estructuras adicionales, en Java se pueden incluir datos como el ID de un usuario, un código de estado interno o el tiempo de espera agotado directamente dentro del objeto. Esta encapsulación garantiza que toda la información necesaria para el diagnóstico viaje de forma compacta y protegida a través de la pila de llamadas hasta el manejador.
+
+## 8. En Java, sobre el bloque **"try-catch"**, ¿se pueden tener más de un bloque `catch`? ¿cuántos bloques `catch` se ejecutan?
+
+### Respuesta
+
+En Java, es perfectamente posible y muy habitual asociar múltiples bloques catch a un único bloque try. Esta capacidad permite realizar una gestión especializada según el tipo de error que se produzca. Al igual que en una estructura switch-case o en una serie de if-else en C, el programador puede definir respuestas distintas para diferentes problemas: por ejemplo, una acción específica si falla la conexión a una base de datos (SQLException) y otra distinta si un cálculo matemático es erróneo (ArithmeticException).
+
+En cuanto a la ejecución, es fundamental comprender que solo se ejecuta un bloque catch por cada excepción lanzada. Cuando ocurre una anomalía dentro del try, la Máquina Virtual de Java recorre los bloques catch de arriba hacia abajo en el orden en que han sido escritos. En cuanto encuentra el primer bloque cuyo tipo de excepción coincida con la que se ha producido (o sea una clase padre de la misma), ejecuta el código de ese bloque y salta directamente al final de toda la estructura try-catch.
+
+Debido a este comportamiento de "selección del primero que coincida", el orden de los bloques es crítico. Si se colocara un bloque que captura una excepción muy genérica (como Exception) antes que uno que captura una específica (como FileNotFoundException), el primero siempre "atraparía" el error y el segundo quedaría como código muerto, ya que nunca llegaría a evaluarse. Por ello, la regla de oro en Java es situar siempre las excepciones más específicas al principio y las más generales al final.
+
+Esta estructura de múltiples manejadores refuerza la limpieza del código. En lugar de tener un único punto de gestión de errores saturado de condicionales para averiguar qué ha pasado, Java permite segmentar la lógica de recuperación de forma clara y declarativa. Una vez finalizado el bloque catch que ha procesado la excepción, el programa continúa su flujo normal después de la estructura completa, a menos que en dicho bloque se decida interrumpir la ejecución deliberadamente.
+
+## 9. Si las excepciones producen rupturas en el código llamador, ¿cómo podemos garantizar que se ejecuta siempre finalmente un código necesario para cierre de ficheros, liberacion de recursos, antes de que continúe propagándose la excepción? Pon un ejemplo en Java con `finally`, tanto con `catch` como sin él.
+
+### Respuesta
+
+Para garantizar la ejecución de código crítico independientemente de si ocurre una anomalía o no, Java proporciona el bloque finally. Esta estructura se sitúa después de los bloques try o catch y su característica fundamental es que siempre se ejecuta, incluso si una excepción provoca que el método finalice prematuramente. En lenguajes como C, el programador debe recordar liberar recursos (como cerrar un puntero a un fichero con fclose) en cada punto de salida de una función; en Java, el bloque finally centraliza esta responsabilidad en un único lugar seguro.
+
+El bloque finally es especialmente útil cuando se produce una ruptura por una excepción que no se captura en el método actual. Si una excepción se lanza dentro del try y no existe un catch compatible, la excepción comenzará a propagarse hacia arriba en la pila de llamadas, pero no antes de que el código dentro del finally se complete. Esto asegura que, aunque el programa se detenga o el error viaje a otra función, los recursos externos como conexiones a bases de datos o descriptores de archivos queden correctamente cerrados, evitando fugas de memoria o bloqueos de recursos en el sistema operativo.
+
+Ejemplo 1: Estructura try-catch-finally
+En este escenario, se intenta realizar una operación, se captura un posible error específico y, pase lo que pase, se asegura el cierre de un recurso ficticio.
+
+Java
+public void procesarConControl() {
+    System.out.println("Abriendo recurso...");
+    try {
+        int resultado = 10 / 0; // Provoca ArithmeticException
+    } catch (ArithmeticException e) {
+        System.out.println("Error: División por cero capturada.");
+    } finally {
+        System.out.println("Cerrando recurso obligatoriamente en finally.");
+    }
+    System.out.println("El método continúa aquí porque el error se capturó.");
+}
+Ejemplo 2: Estructura try-finally (sin catch)
+Este diseño se utiliza cuando el método actual no sabe cómo arreglar el error y prefiere que se propague al llamador, pero aun así tiene la obligación de limpiar sus propios recursos antes de "morir".
+
+Java
+public void procesarYPropagar() {
+    System.out.println("Abriendo fichero...");
+    try {
+        throw new RuntimeException("Fallo crítico"); // El error sale del método
+    } finally {
+        // Este código se ejecuta ANTES de que la excepción abandone el método
+        System.out.println("Limpiando memoria antes de propagar el error.");
+    }
+    // Esta línea NUNCA se ejecutará si hay una excepción
+    System.out.println("Este mensaje no se verá.");
+}
+
+## 10. En Java, el bloque `finally` puede ir sin `catch`? ¿Se ejecuta siempre tanto si ocurre como si no ocurre una excepción? ¿Y si hay un `return` en medio del `try`?
+
+### Respuesta
+
+
+## 11. En Java, qué son las excepciones **"controladas"** y las **"no controladas"**? ¿Qué papel juega `RuntimeException`? Pon un ejemplo de excepciones típicas controladas y no controladas que incluso nosotros mismos podríamos usar. Haz dos listas con 3 o 4 ejemplos de situación donde se suele preferir una excepción controlada y donde se suele preferir una excepción no controlada.
+
+### Respuesta
+
+
+## 12. ¿Qué es y para qué se usa `throws`? ¿Por qué es alternativa a capturar una excepción controlada?
+
+### Respuesta
+
+
+## 13. Pon un ejemplo en Java de firma de método que incluya `throws`, de una función que abre un fichero pero que declara que no le interesa menejar la excepción de si el fichero no existe, sino que se propague hacia arriba. Eso sí, acuérdate del `finally`.
+
+### Respuesta
+
+
+## 14. ¿Podemos poner en `throws` excepciones no controladas, como `RuntimeException`? ¿Debería el método llamador entonces poner `try-catch` en ese caso? ¿Qué sentido tendría?
+
+### Respuesta
+
+
+## 15. ¿Cuándo se recomienda usar excepciones controladas, como `IOException`, y cuándo no controladas como `IllegalArgumentException`? ¿Existen en todos los lenguajes ambas opciones? En los que sólo existe una opción, ¿cuál es la más habitual?
+
+### Respuesta
+
+
+## 16. ¿Tiene sentido lanzar excepciones dentro del `catch`? ¿Se puede relanzar la misma excepción capturada? ¿Cuándo tendría sentido hacer esto último? Pon ejemplos de ambos casos.
+
+### Respuesta
+
+
+## 17. ¿En qué consiste que una excepción sea la **"causa"** de otra excepción? Pon un ejemplo en Java, donde capturemos una excepción de bajo nivel y la encapsulemos en otra personalizada de alto nivel. Cuando una excepción sale por pantalla y tiene una causa, ¿se ve?
+
+### Respuesta
