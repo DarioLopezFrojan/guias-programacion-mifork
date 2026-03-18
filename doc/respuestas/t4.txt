@@ -1,0 +1,342 @@
+<!--
+Posible prompt:
+<prompt>
+Tengo un cuestionario con preguntas sobre "Composición". Debes tener en cuenta que los conocimientos previos que tengo (y por tanto tus respuestas deben ser adaptadas), son:
+- C/C++ sin orientación a objetos.
+- Temas de Java previos: Clases y Objetos, Encapsulación y Excepciones.
+
+Cada respuesta debe tener entre 2 - 4 párrafos de longitud (sin contar los trozos de código).
+
+Por favor, escribe en impersonal las respuestas.
+
+</prompt>
+----
+-->
+# Tema 4.1. Composición
+
+
+## 1. En C, podemos crear estructuras mayores **componiendo** unas con otras, que suelen describirse como "A tiene-un/tiene-varios B". Pon un ejemplo, empleando `struct`, de una línea de puntos, donde puntos tienen dos coordenadas (`x` e `y`), y la línea esta hecha de dos puntos. Incluye una función para calcular la distancia entre puntos y otra para hallar la longitud de una línea.
+
+### Respuesta
+
+En el lenguaje C, la composición se manifiesta de forma natural mediante la inclusión de una estructura dentro de otra. Al definir un struct para representar un punto con coordenadas cartesianas, este se convierte en un nuevo tipo de dato que puede ser utilizado como miembro de una entidad más compleja, como una línea. Esta relación de "tiene-un" permite organizar la información de manera jerárquica, facilitando la gestión de datos relacionados sin necesidad de recurrir a punteros si el tamaño de la estructura es conocido de antemano.
+
+Para calcular la distancia entre dos puntos, se aplica el teorema de Pitágoras sobre la diferencia de sus coordenadas. En el caso de la línea, al estar compuesta por dos estructuras de tipo punto, la función que calcula su longitud simplemente delega la lógica en la función de distancia de puntos, pasando como argumentos los miembros internos de la línea. Este enfoque modular es la base de lo que en Java se expandirá como una relación de asociación fuerte entre objetos.
+
+C
+#include <stdio.h>
+#include <math.h>
+
+typedef struct {
+    double x;
+    double y;
+} Punto;
+
+typedef struct {
+    Punto inicio;
+    Punto fin;
+} Linea;
+
+double calcularDistancia(Punto p1, Punto p2) {
+    return sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2));
+}
+
+double calcularLongitudLinea(Linea l) {
+    return calcularDistancia(l.inicio, l.fin);
+}
+Es importante observar cómo la estructura Linea no necesita conocer los detalles internos de cómo se calcula una distancia; solo necesita saber que posee dos componentes de tipo Punto. En el desarrollo de software, esta separación de responsabilidades permite que, si en el futuro se cambiara la representación de un punto (por ejemplo, a coordenadas polares), el impacto en la definición de la línea sea mínimo, siempre que se actualice la función de cálculo base.
+
+## 2. Ahora transforma ese ejemplo a orientación a objetos con Java, para tener un primer ejemplo de **composición** en orientación a objetos. Crea una clase `Punto`, y una clase `Linea`. La clase `Punto` debe tener un método para calcular distancia a otro `Punto` y `Linea` debe tener un método para calcular su longitud. Gracias a la ocultación de información, supera a C, garantizando que los puntos sean inmutables, al igual que la línea, que una vez creada, no queremos que se modifique de qué a qué puntos va dicha línea.  
+
+### Respuesta
+
+En Java, la composición se logra mediante la inclusión de referencias de una clase como atributos de otra. Para transformar el ejemplo de C, la clase Punto se define con campos private y final, eliminando los métodos de modificación (setters). Esto garantiza la inmutabilidad solicitada: una vez que un objeto Punto es instanciado a través de su constructor, sus coordenadas x e y no pueden ser alteradas, asegurando la integridad de los datos durante todo el ciclo de vida del objeto.
+
+La clase Linea aplica el mismo principio de diseño al declarar sus dos atributos de tipo Punto como privados y finales. Al ser una relación de composición, la Linea "tiene-un" punto de inicio y un punto de fin. El método para calcular la longitud de la línea simplemente invoca al método de cálculo de distancia perteneciente a la clase Punto. Esta estructura refleja una jerarquía clara donde los objetos complejos delegan responsabilidades matemáticas a sus componentes internos más simples.
+
+Java
+public class Punto {
+    private final double x;
+    private final double y;
+
+    public Punto(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public double calcularDistancia(Punto otro) {
+        return Math.sqrt(Math.pow(otro.x - this.x, 2) + Math.pow(otro.y - this.y, 2));
+    }
+}
+
+public class Linea {
+    private final Punto inicio;
+    private final Punto fin;
+
+    public Linea(Punto inicio, Punto fin) {
+        this.inicio = inicio;
+        this.fin = fin;
+    }
+
+    public double calcularLongitud() {
+        return inicio.calcularDistancia(fin);
+    }
+}
+A diferencia de la implementación en C, el uso de modificadores de acceso en Java permite un control estricto sobre quién puede ver o tocar los datos. Mientras que en un struct de C cualquier función con acceso a la memoria podría alterar las coordenadas, aquí la encapsulación protege el estado interno. Si se intentara cambiar un punto de la línea tras su creación, el compilador generaría un error, cumpliendo así con el requisito de inmutabilidad y superando la seguridad que ofrece el enfoque procedural.
+
+## 3. ¿Qué significa la **multiplicidad** en la composición? En el ejemplo anterior, ¿cuál es la multiplicidad entre `Linea` y `Punto`? Indícalo expresando la multiplicidad en ambas direcciones, de `Linea` a `Punto` y de `Punto` a `Linea`.
+
+### Respuesta
+
+La multiplicidad en el contexto de la composición define el número de instancias de una clase que pueden estar asociadas con una instancia de otra clase. Es una restricción que especifica cuántos objetos de una parte pueden pertenecer a un todo, y viceversa. En el diseño de software, este concepto permite establecer reglas de integridad de datos, determinando si una relación es de uno a uno, de uno a muchos o de muchos a muchos, lo cual es fundamental para estructurar la base de datos o la lógica de los objetos en memoria.
+
+En el ejemplo de la clase Linea y la clase Punto, la multiplicidad se analiza en ambas direcciones para comprender la dependencia estructural. Desde la perspectiva de Linea a Punto, la multiplicidad es de exactamente 2. Esto se debe a que, según la definición del problema, una línea está compuesta obligatoriamente por un punto de inicio y un punto de fin; no puede existir con un solo punto ni con tres. En términos de modelado, esto se representaría con el número 2 constante en el extremo de la relación que apunta a los puntos.
+
+Desde la perspectiva de Punto a Linea, la multiplicidad es de 0 a 1 (0..1). Dado que se ha definido una relación de composición estricta donde los puntos son componentes internos de la línea y esta es inmutable, un objeto Punto específico pertenece de forma exclusiva a una única instancia de Linea (o a ninguna si aún no ha sido asignado a una). En la composición, el ciclo de vida de la parte está ligado al del todo, por lo que un punto no suele compartirse simultáneamente entre múltiples líneas independientes si se desea mantener la integridad de la estructura compuesta.
+
+Este rigor en la multiplicidad diferencia la composición de una simple asociación. Mientras que en C un puntero podría apuntar a cualquier dirección de memoria sin restricciones de cantidad, en la orientación a objetos con Java se utilizan estas reglas para asegurar que la estructura de la Linea sea siempre válida. Si se intentara crear una línea sin los dos puntos requeridos, la lógica del constructor debería lanzar una excepción para evitar un estado inconsistente en el programa.
+
+## 4. ¿Qué significa composición **fuerte** y composición **débil**? ¿Qué consecuencia implica en relación al ciclo de vida de los objetos? Indica a cuál solemos referirnos como **"asociación o agregación"** y a cuál como **"composición"** propiamente.
+
+### Respuesta
+
+La distinción entre composición fuerte y débil radica en el grado de dependencia y el acoplamiento entre el objeto "todo" y sus objetos "parte". La composición fuerte, referida simplemente como composición, implica una relación de pertenencia vital y exclusiva. En este modelo, las partes no tienen sentido fuera del todo y su existencia está subordinada a la del objeto contenedor. Por el contrario, la composición débil, conocida técnicamente como agregación (o asociación, en un sentido más general), describe una relación donde las partes pueden existir de forma independiente y ser compartidas por diferentes contenedores.
+
+En cuanto al ciclo de vida, las consecuencias son determinantes para la gestión de memoria y la integridad de los datos. En la composición fuerte, cuando el objeto principal es destruido, todos sus componentes asociados se destruyen simultáneamente; por ejemplo, si se elimina una Linea, sus dos objetos Punto dejan de existir si fueron creados exclusivamente para ella. En la agregación, el ciclo de vida de los objetos es independiente: si el objeto contenedor desaparece, las partes permanecen intactas en el sistema, permitiendo que un Punto sobreviva aunque la Linea que lo utilizaba sea eliminada por el recolector de basura.
+
+En la práctica de programación con Java, la composición fuerte suele implementarse creando los objetos internos dentro del constructor de la clase contenedora o asegurando que no se compartan referencias externas (encapsulamiento estricto). La agregación se manifiesta habitualmente pasando objetos ya existentes al constructor de otra clase mediante parámetros. Esta diferencia es crucial al diseñar sistemas complejos, ya que define si un componente puede ser reutilizado en otros contextos o si es una pieza privada y desechable de una estructura mayor.
+
+## 5. Cuando una clase usa a otra al recibirla o devolverla como parámetro en algún método, al hacer `new` dentro de un método, o al usarlas como variables locales, ¿hablamos de composición o de **"dependencia"**?
+
+### Respuesta
+
+Cuando una clase utiliza a otra de forma temporal, ya sea recibiéndola como parámetro, instanciándola mediante new dentro de un método o declarándola como una variable local, se habla de dependencia (o relación de uso). A diferencia de la composición, la dependencia no implica una relación estructural permanente ni de pertenencia; es la forma más débil de relación entre clases. En este escenario, la clase "dependiente" simplemente requiere de la otra para ejecutar una tarea específica, tras lo cual la conexión entre ambas desaparece al finalizar la ejecución del método.
+
+En términos de diseño, la dependencia se describe con la frase "usa-un", mientras que la composición se define como "tiene-un". Por ejemplo, si un método Impresora.imprimir(Documento doc) recibe un objeto de tipo Documento, existe una dependencia: la impresora necesita el documento para trabajar, pero el documento no forma parte de la estructura interna de la impresora ni su ciclo de vida está ligado a ella. En C, esto equivaldría a pasar un puntero a una función que no se almacena en ninguna estructura global o estática.
+
+Desde el punto de vista de la implementación en Java, las dependencias son fundamentales para mantener un bajo acoplamiento. Al no almacenar el objeto externo como un atributo de la clase (campo), se evita crear un vínculo rígido en la memoria. Esto permite que el sistema sea más flexible, ya que los cambios en la estructura interna de la clase dependiente no necesariamente afectan a los objetos que se le pasan ocasionalmente por parámetro, siempre que se respete la interfaz o los métodos públicos de la clase utilizada.
+
+## 6. En el ejemplo anterior de línea y punto, programa la relación entre `Linea` y `Punto` de dos formas. Una **como composición fuerte**, donde el ciclo de vida de los puntos está ligado al de Linea y otra **como composición débil**, donde no.
+
+### Respuesta
+
+En la composición fuerte, la clase Linea asume la responsabilidad total sobre el ciclo de vida de sus objetos Punto. Para implementar esto en Java, el constructor de Linea no recibe objetos Punto externos, sino los datos primitivos (como double x, y) necesarios para instanciarlos internamente. Al hacer new Punto(...) dentro del constructor, se asegura de que esos puntos no existan fuera de la línea ni sean accesibles por otras clases, quedando su existencia ligada exclusivamente a la de la instancia de Linea.
+
+Java
+// Ejemplo de Composición Fuerte
+public class LineaFuerte {
+    private final Punto inicio;
+    private final Punto fin;
+
+    public LineaFuerte(double x1, double y1, double x2, double y2) {
+        // La línea crea y posee sus propios puntos
+        this.inicio = new Punto(x1, y1);
+        this.fin = new Punto(x2, y2);
+    }
+}
+Por el contrario, la composición débil (o agregación) se programa permitiendo que la clase Linea reciba referencias de objetos Punto que ya han sido creados previamente en otra parte del programa. En este caso, el constructor recibe los objetos como parámetros. Esto implica que si la instancia de Linea se destruye, los objetos Punto originales siguen existiendo en la memoria del programa (mientras haya otra referencia a ellos), permitiendo que un mismo punto sea compartido, por ejemplo, por varias líneas que se cruzan en un vértice.
+
+Java
+// Ejemplo de Composición Débil (Agregación)
+public class LineaDebil {
+    private final Punto inicio;
+    private final Punto fin;
+
+    public LineaDebil(Punto inicio, Punto fin) {
+        // La línea recibe puntos que ya existen externamente
+        this.inicio = inicio;
+        this.fin = fin;
+    }
+}
+Desde el punto de vista de la gestión de memoria en Java, la composición fuerte es más "segura" para evitar efectos secundarios, ya que nadie desde fuera puede modificar los puntos de la línea (especialmente si no hay getters que devuelvan la referencia directa). La composición débil es más eficiente en términos de memoria cuando se requiere reutilizar coordenadas en estructuras complejas, como polígonos o redes de puntos, donde crear copias individuales de cada punto resultaría redundante.
+
+## 7. En Java, en la composición fuerte, ¿cuando el contenedor destruye los objetos? No se observa que `Linea` destruya los `Punto` explícitamente, ¿Por qué?
+
+### Respuesta
+
+A diferencia de lenguajes como C++, donde el programador debe liberar manualmente la memoria mediante el operador delete o destructores, en Java no existe una instrucción explícita para destruir objetos. La gestión de la memoria está a cargo del Garbage Collector (Recolector de Basura), un proceso automático de la Máquina Virtual de Java (JVM). En una relación de composición fuerte, los objetos Punto se consideran candidatos para la recolección en el momento en que el objeto Linea que los contiene deja de ser accesible y no existen otras referencias externas a dichos puntos.
+
+Cuando una instancia de Linea sale del alcance (por ejemplo, al finalizar el método donde fue creada) o se le asigna el valor null, el Recolector de Basura identifica que ese objeto ya no es necesario. Debido a la composición fuerte, los campos internos inicio y fin de esa línea específica son las únicas referencias que mantienen vivos a esos objetos Punto. Al quedar el "todo" (la línea) marcado para su eliminación, las "partes" (los puntos) pierden su único vínculo de acceso y son procesadas por el recolector en el siguiente ciclo de limpieza.
+
+Este comportamiento es una de las mayores ventajas de Java sobre C, ya que previene las fugas de memoria (memory leaks) que ocurrirían en C si se olvidara liberar una estructura anidada. En C, si se define una línea con punteros a puntos, se debe liberar cada punto antes que la línea; en Java, simplemente se deja de usar la línea y el sistema se encarga de la limpieza en cascada. La inmutabilidad de los puntos refuerza este ciclo, pues garantiza que un punto creado para una línea no haya sido "prestado" a otra entidad que pudiera mantenerlo vivo involuntariamente.
+
+Por tanto, no se observa una destrucción explícita porque el diseño del lenguaje delega esa tarea a la infraestructura de ejecución. El programador se centra en la lógica de negocio y en asegurar que las referencias se anulen cuando ya no se necesiten, confiando en que la JVM recuperará el espacio de los objetos compuestos de manera eficiente.
+
+## 8. Pon un ejemplo de composicion débil entre un departamento que tiene varios profesores. Implementa dos composiciones a la vez: entre el departamento y todos sus profesores y entre el departamento y su director, que es un profesor del departamento. Siempre debe haber un director en el departamento desde el inicio. Lanza excepciones si se viola la invariante. Emplea arrays primitivos de Java, estilo `Profesor[]`, con máximo 50, pero no rompas la encapsulación, no desveles que estás empleando un array, permite añadir un `Profesor` al final de la lista, y eliminar un profesor dada su posición. Da acceso a los profesores con un método para saber cuántos hay y otro para obtener un profesor por posición. El director se puede cambiar por otro profesor del departamento. Sin embargo, ten en cuenta esta invariante de clase: el director debe formar siempre parte de la lista de profesores, es decir, ten cuidado al cambiar el director o al eliminar un profesor.
+
+### Respuesta
+
+En la composición débil (o agregación) entre un Departamento y sus Profesores, los objetos existen de forma independiente: un profesor puede ser creado antes que el departamento y continuar existiendo si este desaparece. Para implementar esta estructura bajo una encapsulación estricta, se utiliza un array de tamaño fijo como almacenamiento interno, pero se oculta mediante métodos que gestionan la lógica de negocio. La invariante de clase principal es que el director debe ser siempre un miembro activo de la lista de profesores, lo que requiere validaciones rigurosas en los métodos de inserción, eliminación y cambio de mando.
+
+El diseño de la clase Departamento debe asegurar que, desde su construcción, se cumpla la regla del director. Si se intenta instanciar un departamento con una referencia nula para el director o la lista de profesores, se debe lanzar una IllegalArgumentException. Al añadir un profesor, se verifica que no se supere el límite de 50; al eliminar uno por su posición, se debe comprobar que no se esté intentando borrar al profesor que actualmente ejerce como director, lanzando una excepción personalizada o de tipo IllegalStateException para proteger la integridad del modelo.
+
+Java
+public class Departamento {
+    private final String nombre;
+    private Profesor[] profesores;
+    private int numProfesores;
+    private Profesor director;
+
+    public Departamento(String nombre, Profesor directorInicial) {
+        if (directorInicial == null) throw new IllegalArgumentException("El director no puede ser nulo.");
+        this.nombre = nombre;
+        this.profesores = new Profesor[50];
+        this.profesores[0] = directorInicial;
+        this.numProfesores = 1;
+        this.director = directorInicial;
+    }
+
+    public void añadirProfesor(Profesor p) {
+        if (p == null) throw new IllegalArgumentException("Profesor nulo.");
+        if (numProfesores >= 50) throw new IllegalStateException("Departamento lleno.");
+        profesores[numProfesores++] = p;
+    }
+
+    public void eliminarProfesor(int posicion) {
+        if (posicion < 0 || posicion >= numProfesores) throw new IndexOutOfBoundsException();
+        if (profesores[posicion] == director) {
+            throw new IllegalStateException("No se puede eliminar al profesor mientras sea director.");
+        }
+        // Desplazamiento para no dejar huecos
+        for (int i = posicion; i < numProfesores - 1; i++) {
+            profesores[i] = profesores[i + 1];
+        }
+        profesores[--numProfesores] = null;
+    }
+
+    public void cambiarDirector(Profesor nuevoDirector) {
+        boolean encontrado = false;
+        for (int i = 0; i < numProfesores; i++) {
+            if (profesores[i] == nuevoDirector) {
+                encontrado = true;
+                break;
+            }
+        }
+        if (!encontrado) throw new IllegalArgumentException("El nuevo director debe pertenecer al departamento.");
+        this.director = nuevoDirector;
+    }
+
+    public int getCantidadProfesores() { return numProfesores; }
+    
+    public Profesor getProfesor(int posicion) {
+        if (posicion < 0 || posicion >= numProfesores) throw new IndexOutOfBoundsException();
+        return profesores[posicion];
+    }
+}
+Este enfoque garantiza que la estructura interna sea invisible para el usuario de la clase. Al no devolver el array completo (solo profesores individuales o el conteo), se evita que el cliente modifique la lista saltándose las reglas de la clase. La gestión manual del array, moviendo los elementos tras una eliminación, es una técnica común cuando se trabaja con estructuras primitivas en Java para mantener la contigüidad de los datos, simulando el comportamiento que en C se haría con punteros pero con la seguridad adicional de las excepciones y el tipado fuerte.
+
+## 9. En Java, existen también `List`, cambia y muestra cómo sería el código anterior empleando `List` en vez de arrays primitivos. ¿Qué parte del código original te has ahorrado? Además, fíjate en el método `getProfesor(int pos)`: si en su lugar existiera un método que devolviera todos los profesores a la vez, ¿qué problema tendría devolver directamente la lista interna? ¿Cómo lo resolverías?
+
+### Respuesta
+
+Al sustituir los arrays primitivos por la interfaz List (usualmente implementada mediante ArrayList), el código se simplifica drásticamente. La gestión manual de la memoria y la estructura de datos desaparece, ya que List se encarga de redimensionar el contenedor automáticamente y ofrece métodos listos para usar como add y remove. Esto elimina la necesidad de definir un tamaño máximo arbitrario (como el límite de 50) y, lo más importante, ahorra todo el bloque de código dedicado al desplazamiento de elementos tras una eliminación, una tarea propensa a errores que en C requeriría mover punteros o usar memmove.
+
+Java
+import java.util.*;
+
+public class Departamento {
+    private final String nombre;
+    private final List<Profesor> profesores;
+    private Profesor director;
+
+    public Departamento(String nombre, Profesor directorInicial) {
+        if (directorInicial == null) throw new IllegalArgumentException("Director nulo.");
+        this.nombre = nombre;
+        this.profesores = new ArrayList<>();
+        this.profesores.add(directorInicial);
+        this.director = directorInicial;
+    }
+
+    public void añadirProfesor(Profesor p) {
+        if (p == null) throw new IllegalArgumentException("Profesor nulo.");
+        profesores.add(p);
+    }
+
+    public void eliminarProfesor(int posicion) {
+        if (profesores.get(posicion) == director) {
+            throw new IllegalStateException("No se puede eliminar al director.");
+        }
+        profesores.remove(posicion);
+    }
+
+    public int getCantidadProfesores() { return profesores.size(); }
+    
+    public Profesor getProfesor(int posicion) { return profesores.get(posicion); }
+    
+    public List<Profesor> getTodosLosProfesores() {
+        return Collections.unmodifiableList(profesores);
+    }
+}
+El principal riesgo de crear un método que devuelva la lista interna (return profesores;) es la ruptura de la encapsulación. Aunque la referencia sea privada, al entregarla al exterior, cualquier clase externa podría ejecutar lista.clear() o añadir elementos que violen las reglas de negocio (como meter un profesor nulo) sin que el Departamento se entere. Esto invalidaría las invariantes de clase que se han programado cuidadosamente, dejando al objeto en un estado inconsistente.
+
+Para resolver este problema sin perder la comodidad de obtener todos los datos, se utiliza una vista no modificable o se realiza una copia defensiva. En el código anterior, Collections.unmodifiableList(profesores) crea un envoltorio que permite leer los profesores pero lanza una excepción si alguien intenta añadir o eliminar elementos desde fuera. De esta forma, se mantiene la integridad del departamento mientras se ofrece flexibilidad al usuario de la clase.
+
+## 10. Al igual que ocurre con las excepciones en Java, que pueden encerrar causas (que son excepciones), de forma recursiva, suponen un tipo especial de composiciones, denominadas composiciones recursivas. Pon un ejemplo en Java de una `Persona`, que sea inmutable, y que tiene una madre, que es otra `Persona`. Haz un main con un ejemplo de uso con una familia de personas, desde el nieto hasta la abuela. Enumera algún otro ejemplo clásico de composiciones recursivas.
+
+### Respuesta
+
+La composición recursiva ocurre cuando una clase contiene una referencia a un objeto de su propio tipo, permitiendo construir estructuras jerárquicas o en cadena de profundidad arbitraria. En el caso de una clase Persona inmutable, cada instancia actúa como un nodo que "tiene-una" referencia a su progenitora. Al ser inmutable, los campos se declaran como private final y se inicializan exclusivamente en el constructor, lo que garantiza que el árbol genealógico trazado no pueda ser alterado una vez creado, proporcionando una seguridad de hilos y de datos superior a las estructuras dinámicas de C.
+
+En el siguiente ejemplo, se observa cómo la relación se establece hacia atrás en el tiempo. El objeto "Nieto" mantiene una referencia a "Madre", quien a su vez mantiene una referencia a "Abuela". Esta cadena puede continuar hasta que una persona se instancie con una referencia null para el campo madre, marcando el final de la recursión conocida.
+
+Java
+public class Persona {
+    private final String nombre;
+    private final Persona madre; // Composición recursiva
+
+    public Persona(String nombre, Persona madre) {
+        this.nombre = nombre;
+        this.madre = madre;
+    }
+
+    public String getNombre() { return nombre; }
+    public Persona getMadre() { return madre; }
+
+    @Override
+    public String toString() {
+        return nombre + (madre != null ? " (hijo/a de " + madre.getNombre() + ")" : " (ancestro inicial)");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Persona abuela = new Persona("Elena", null);
+        Persona madre = new Persona("Sofía", abuela);
+        Persona nieto = new Persona("Lucas", madre);
+
+        System.out.println(nieto);
+        System.out.println("La abuela de " + nieto.getNombre() + " es " + nieto.getMadre().getMadre().getNombre());
+    }
+}
+Existen otros ejemplos clásicos de composiciones recursivas en la informática que siguen esta misma lógica estructural. Los más destacados son las estructuras de datos enlazadas, como las listas enlazadas (donde un Nodo tiene un puntero a otro Nodo) o los árboles binarios (donde un Nodo tiene un hijo izquierdo y uno derecho, ambos de tipo Nodo). También es común ver este patrón en el sistema de archivos de un sistema operativo, donde una Carpeta puede contener una lista de otros objetos Carpeta, permitiendo la anidación infinita de directorios.
+
+## 11. ¿Qué son las relaciones de composición "bidireccionales"? ¿Qué habría que hacer para implementar este tipo de relación en el ejemplo de `Profesor` y `Departamento`?
+
+### Respuesta
+
+Una relación bidireccional es aquella en la que ambos objetos implicados mantienen una referencia mutua, permitiendo la navegación en ambos sentidos del grafo de objetos. En el caso de Departamento y Profesor, esto significa que el departamento conoce a sus profesores (un "todo" que conoce sus "partes"), pero cada profesor también guarda una referencia al departamento al que pertenece (la "parte" conoce su "todo"). Mientras que en una relación unidireccional un profesor sería una entidad aislada que no sabe dónde trabaja, en la bidireccional puede responder a la pregunta: "¿A qué departamento estoy adscrito?".
+
+Para implementar esto en Java, se debe añadir un atributo de tipo Departamento dentro de la clase Profesor. El mayor desafío técnico es mantener la consistencia de la relación: si un departamento añade a un profesor a su lista, el campo departamento de ese profesor debe actualizarse para apuntar a dicho departamento. Si no se gestiona con cuidado, se corre el riesgo de tener datos contradictorios, como un profesor que cree pertenecer al Departamento de Física mientras que el Departamento de Matemáticas lo tiene en su lista.
+
+Java
+public class Profesor {
+    private String nombre;
+    private Departamento departamento; // Referencia al "todo"
+
+    public void setDepartamento(Departamento depto) {
+        this.departamento = depto;
+    }
+    
+    public Departamento getDepartamento() { return departamento; }
+}
+
+public class Departamento {
+    // ... campos anteriores ...
+    public void añadirProfesor(Profesor p) {
+        if (p != null) {
+            profesores.add(p);
+            p.setDepartamento(this); // Sincronización de la relación
+        }
+    }
+}
+Esta estructura introduce una dependencia circular a nivel de código, lo que requiere un manejo cuidadoso de la inmutabilidad. Si ambos objetos intentan ser inmutables y requieren al otro en el constructor, se caería en un problema de "el huevo o la gallina" (no se puede crear el uno sin el otro ya existente). Por ello, en las relaciones bidireccionales suele relajarse la inmutabilidad en uno de los extremos, permitiendo que la referencia se establezca mediante un método tras la instanciación, asegurando que el sistema refleje fielmente la realidad jerárquica de la organización.
