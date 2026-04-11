@@ -1,0 +1,353 @@
+<!--
+Posible prompt:
+<prompt>
+Tengo un cuestionario con preguntas sobre "Herencia". Debes tener en cuenta que los conocimientos previos que tengo (y por tanto tus respuestas deben ser adaptadas), son:
+- C/C++ sin orientación a objetos.
+- Temas de Java previos: Clases y Objetos, Encapsulación, Excepciones y Composición.
+
+Cada respuesta debe tener entre 2 - 4 párrafos de longitud (sin contar los trozos de código).
+
+Por favor, escribe en impersonal las respuestas.
+
+</prompt>
+----
+-->
+## 1. En orientación a objetos, ¿qué es la **herencia** y su relación con "A es-un B"?. Explica las dos implicaciones principales: (1) **compatibilidad de tipos** y (2) **herencia de estado y comportamiento**. Pon un ejemplo en Java muy sencillo, donde un `Soldado` tiene un `nombre` (privado) y un método `saludar()` que muestra su nombre. Hay dos subtipos: un `Artillero`, que es capaz de disparar cohetes y un `Zapador` que pone minas, ambos heredan el atributo nombre y la capacidad de saludar. Además, y de forma específica, el artillero tiene un número de cohetes y el zapador un número de minas, accesibles mediante "getters" específicos. Respecto a la compatibilidad de tipos, aprovechémosla: crea un array de `Soldado`, mete varios de distinto tipo (son todos compatibles con `Soldado`). Recórrela y que todos te saluden.
+
+### Respuesta
+
+La herencia es un mecanismo fundamental de la programación orientada a objetos que permite definir una nueva clase a partir de una ya existente. En este proceso, se establece una relación jerárquica donde la subclase (clase hija) adquiere de forma automática las características de la superclase (clase padre). La semántica de "A es-un B" significa que cualquier instancia de la subclase posee todas las propiedades de la clase base; por ejemplo, si un Artillero hereda de Soldado, se afirma que "un Artillero es un Soldado", lo que garantiza que el primero puede realizar cualquier acción que el segundo sea capaz de ejecutar.
+
+La primera implicación, la herencia de estado y comportamiento, permite que las subclases reutilicen el código ya implementado. Aunque los atributos sean privados en la clase padre (encapsulación), estos forman parte de la estructura de la subclase, la cual también hereda los métodos públicos o protegidos. Por otro lado, la compatibilidad de tipos es la capacidad de tratar a un objeto de una subclase como si fuera del tipo de su superclase. Esto permite que una variable de tipo general pueda referenciar a objetos más específicos, facilitando el diseño de sistemas flexibles donde se pueden gestionar colecciones de objetos heterogéneos bajo una interfaz común.
+
+Java
+// Clase base
+class Soldado {
+    private String nombre;
+
+    public Soldado(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void saludar() {
+        System.out.println("Soy el soldado " + nombre);
+    }
+}
+
+// Subclases con estado y comportamiento específico
+class Artillero extends Soldado {
+    private int numCohetes;
+
+    public Artillero(String nombre, int cohetes) {
+        super(nombre);
+        this.numCohetes = cohetes;
+    }
+
+    public int getNumCohetes() { return numCohetes; }
+    public void disparar() { System.out.println("Disparando cohete..."); }
+}
+
+class Zapador extends Soldado {
+    private int numMinas;
+
+    public Zapador(String nombre, int minas) {
+        super(nombre);
+        this.numMinas = minas;
+    }
+
+    public int getNumMinas() { return numMinas; }
+    public void ponerMina() { System.out.println("Colocando mina..."); }
+}
+Para demostrar la compatibilidad de tipos, se utiliza un array de la clase base para almacenar instancias de las subclases. Al iterar sobre este array, se puede invocar el método saludar() de manera uniforme, independientemente de si el objeto es un Artillero o un Zapador. Esta capacidad es el fundamento del polimorfismo, permitiendo que el código sea extensible: si se añadiera un nuevo tipo de soldado en el futuro, el ciclo de saludo no requeriría modificación alguna.
+
+Java
+public class Main {
+    public static void main(String[] args) {
+        // Compatibilidad de tipos: Array de Soldado conteniendo subtipos
+        Soldado[] ejercito = {
+            new Artillero("Ramiro", 10),
+            new Zapador("Lucas", 5),
+            new Artillero("Beatriz", 12)
+        };
+
+        for (Soldado s : ejercito) {
+            s.saludar(); // Todos saludan porque "son" Soldados
+        }
+    }
+}
+
+## 2. Al crear los soldados concretos, ¿cuántos constructores se ejecutan y en qué orden? ¿Qué significa `super` dentro de un constructor? Si la clase base no tiene visible el constructor sin parámetros, ¿debo llamar a `super` siempre? 
+
+### Respuesta
+
+En el proceso de instanciación de una subclase, se ejecutan en cadena tantos constructores como niveles existan en la jerarquía de herencia. Siempre se comienza por el constructor de la clase base de nivel superior y se desciende sucesivamente hasta llegar al constructor de la clase concreta que se está instanciando. Por ejemplo, al crear un Artillero, primero se ejecuta el constructor de Object (la raíz de todas las clases en Java), después el de Soldado y finalmente el de Artillero. Este orden garantiza que el estado de la clase padre esté correctamente inicializado antes de que la subclase intente añadir o modificar información.
+
+La palabra reservada super dentro de un constructor funciona como una llamada explícita al constructor de la superclase. Es la herramienta que permite pasar argumentos desde la clase hija hacia la clase padre para inicializar los atributos privados que la hija no puede manipular directamente. Si no se escribe explícitamente la instrucción super(), el compilador de Java intenta insertar de forma automática una llamada al constructor sin parámetros de la clase base.
+
+Si la clase base carece de un constructor sin parámetros (o este no es visible), es obligatorio invocar explícitamente a super con los argumentos adecuados en la primera línea de cada constructor de la subclase. De omitirse esta llamada, se produciría un error de compilación, ya que el sistema no sabría cómo construir la parte del objeto correspondiente a la clase padre. Esta restricción asegura que la cadena de inicialización nunca se rompa y que todos los niveles de la jerarquía de memoria queden correctamente establecidos al crear un objeto.
+
+En lenguajes como C, se suele reservar memoria para una estructura completa; en Java, aunque la memoria se reserva de una vez para el objeto total, la lógica de inicialización se delega hacia arriba mediante esta jerarquía de constructores. Esto previene que una subclase deje al objeto en un estado inconsistente al ignorar las reglas de validación o configuración definidas en su clase progenitora.
+
+## 3. Respecto a los objetos de subclases en memoria, los atributos privados de la superclase, ¿forman parte de una instancia de la subclase en memoria? En caso afirmativo ¿implica que se puedan usar desde el código de la subclase? Explícalo con el ejemplo de `Soldado` y alguna de sus subclases.
+
+### Respuesta
+
+Efectivamente, los atributos privados de la superclase forman parte física de la instancia de la subclase en la memoria. Cuando se crea un objeto de tipo Artillero, el sistema reserva un bloque de memoria que contiene tanto los campos definidos en Soldado (como el String nombre) como los campos específicos de Artillero (como int numCohetes). En términos de estructura de memoria, es muy similar a cómo en C una estructura anidada contiene todos los miembros de la estructura interna; el objeto es un bloque único y contiguo que engloba toda la jerarquía de datos.
+
+Sin embargo, que dichos atributos existan en la memoria de la instancia no implica que sean accesibles directamente desde el código de la subclase. Debido a las reglas de encapsulación, el modificador private restringe el acceso exclusivamente a los métodos de la clase que los definió. Por lo tanto, un método dentro de la clase Artillero no puede manipular directamente la variable nombre. Esta distinción entre "existencia en memoria" y "visibilidad de código" es crucial para mantener la integridad de los datos, obligando a la subclase a utilizar métodos públicos o protegidos (como constructores o getters) para interactuar con su propio estado heredado.
+
+En el ejemplo del Soldado, si se intentara escribir una línea en la clase Artillero que fuera this.nombre = "Nuevo Nombre";, el compilador de Java generaría un error de acceso. A pesar de que el objeto Artillero que reside en el heap de la memoria tiene una sección dedicada a almacenar ese nombre, el código de la subclase no tiene "permiso de escritura" sobre esa dirección de memoria específica. Para modificarlo o leerlo, el Artillero debe confiar en la interfaz que el Soldado haya proporcionado, garantizando así que la lógica de control definida en la clase base no sea puenteada por sus descendientes.
+
+Esta arquitectura permite que, si en el futuro se decidiera cambiar la forma en que Soldado almacena el nombre (por ejemplo, dividiéndolo en nombre y apellidos), solo se tendría que modificar la clase base. Las subclases como Zapador o Artillero seguirían funcionando correctamente sin necesidad de cambios en su código, ya que nunca tuvieron acceso directo a la implementación interna de esos datos, sino solo a su comportamiento.
+
+## 4. ¿Qué implica en términos de **extensibilidad** de código el hecho de que sean compatibles a nivel de tipos? Ilustra esto añadiendo un nuevo tipo de `Soldado` y demostrando que el código para pedir el saludo a todos los soldados no se modifica.
+
+### Respuesta
+
+La compatibilidad de tipos es el pilar que sostiene la extensibilidad en la programación orientada a objetos. En términos prácticos, implica que el sistema está diseñado para manejar abstracciones (el concepto general de Soldado) en lugar de implementaciones concretas. Esto permite que el código principal sea "agnóstico" respecto a los tipos específicos que puedan surgir en el futuro; mientras una nueva clase cumpla con el contrato de la superclase, el sistema la aceptará sin necesidad de ser reprogramado o recompilado en sus secciones estructurales.
+
+Para ilustrar esta ventaja, se puede introducir una nueva clase denominada Medico. Esta clase hereda de Soldado y añade su propia lógica, como un contador de botiquines. A pesar de ser una adición posterior al diseño original del sistema, no se requiere modificar ni una sola línea del bucle que recorre el array de soldados. La infraestructura existente simplemente "ve" al Medico como un Soldado más, demostrando el cumplimiento del principio de "abierto para la extensión, pero cerrado para la modificación".
+
+Java
+// Nueva extensión del sistema sin tocar las clases anteriores
+class Medico extends Soldado {
+    private int botiquines;
+
+    public Medico(String nombre, int botiquines) {
+        super(nombre);
+        this.botiquines = botiquines;
+    }
+
+    public int getBotiquines() { return botiquines; }
+    public void curar() { System.out.println("Curando heridos..."); }
+}
+En el siguiente fragmento, se observa cómo el código de gestión permanece intacto. Al añadir una instancia de Medico al array, el método saludar() se ejecuta correctamente gracias a la herencia de comportamiento. Esta capacidad de integrar nuevos módulos con un impacto nulo en el código preexistente es lo que diferencia una arquitectura rígida, típica de procedimientos extensos en C con múltiples switch o if-else basados en tipos de datos, de una arquitectura flexible y escalable en Java.
+
+Java
+public class PruebaExtensibilidad {
+    public static void main(String[] args) {
+        // Se añade el Medico a la colección de Soldados
+        Soldado[] ejercito = {
+            new Artillero("Ramiro", 10),
+            new Zapador("Lucas", 5),
+            new Medico("Elena", 3) // Nueva clase integrada perfectamente
+        };
+
+        // Este bloque de código NO ha cambiado desde la pregunta 1
+        // Es la prueba de que el sistema es extensible
+        for (Soldado s : ejercito) {
+            s.saludar(); 
+        }
+    }
+}
+
+## 5. En Java, cuando trabajo con referencias y herencia. ¿Puedo tener una referencia del supertipo que apunte a objetos reales de un subtipo? ¿Puedo invocar con la referencia del supertipo a métodos públicos del subtipo? ¿En qué consiste el **"upcasting"** y el **"downcasting"**? ¿Qué es el `instanceof`? Pon un ejemplo de recorrido de un array de `Soldado`, comprobando que, si el objeto real es un `Artillero`, solicite el número de cohetes que tiene y los imprima.
+
+### Respuesta
+
+En Java, es perfectamente válido y común que una referencia de una superclase apunte a un objeto de una subclase. Esto es posible gracias a la compatibilidad de tipos mencionada anteriormente; dado que un Artillero "es un" Soldado, una variable de tipo Soldado puede gestionar la dirección de memoria de cualquier instancia de sus subtipos. Sin embargo, la capacidad de invocación está limitada por el tipo de la referencia, no por el objeto real. Esto significa que si se usa una referencia de tipo Soldado, solo se podrá acceder a los métodos definidos en la clase Soldado, aunque el objeto en memoria sea un Artillero con métodos adicionales.
+
+El upcasting es la conversión de una referencia de un subtipo a un supertipo (por ejemplo, de Artillero a Soldado). Este proceso es automático y seguro, ya que nunca se pierde la identidad del objeto, solo se "limita" la visión que el programador tiene de él. Por el contrario, el downcasting es la conversión de una referencia de un supertipo a un subtipo (de Soldado a Artillero). Esta operación no es automática y requiere un "cast" explícito, ya que es potencialmente peligrosa: si se intenta tratar como Artillero a un objeto que en realidad es un Zapador, el programa lanzará una excepción en tiempo de ejecución.
+
+Para realizar un downcasting de forma segura, se utiliza el operador instanceof. Este operador binario permite verificar en tiempo de ejecución si un objeto pertenece a una clase determinada o a alguna de sus subclases, devolviendo un valor booleano. Es la herramienta que permite inspeccionar la naturaleza real de un objeto oculto tras una referencia genérica antes de intentar acceder a sus miembros específicos, evitando así errores fatales en la ejecución del código.
+
+En el siguiente ejemplo, se recorre el array de soldados. Aunque la referencia s es de tipo Soldado, se utiliza instanceof para identificar a los artilleros. Una vez confirmada su identidad, se realiza el downcasting a Artillero para poder invocar el método getNumCohetes(), el cual no existe en la clase base Soldado.
+
+Java
+for (Soldado s : ejercito) {
+    s.saludar(); // Método común accesible por la referencia del supertipo
+
+    // Comprobación de tipo real con instanceof
+    if (s instanceof Artillero) {
+        // Downcasting explícito para acceder a métodos específicos
+        Artillero a = (Artillero) s; 
+        System.out.println("-> Este artillero tiene " + a.getNumCohetes() + " cohetes.");
+    }
+}
+
+## 6. Respecto a la ocultación de información y herencia, ¿qué significa acceso **"protegido"** de métodos y/o atributos? ¿Cómo se implementa en Java? Pon un ejemplo de uso de en la clase `Soldado` para que su nombre sea protegido y pueda usarse en el método de poner bombas del `Zapador`.
+
+### Respuesta
+
+El modificador de acceso protected (protegido) representa un nivel intermedio de visibilidad en Java, situado entre el acceso privado y el público. En la programación estructurada como C, la visibilidad suele ser binaria (o el dato es local a un archivo/función o es global); sin embargo, en orientación a objetos surge la necesidad de permitir que las subclases manipulen ciertos datos sin exponerlos al resto del programa. Un miembro declarado como protegido es accesible por la propia clase que lo define, por todas sus subclases (independientemente del paquete en el que se encuentren) y por otras clases dentro del mismo paquete.
+
+Para implementar este nivel de acceso en Java, se utiliza la palabra reservada protected antes de la declaración del atributo o método. Esto rompe la barrera estricta del private exclusivamente para la línea sucesoria. Es una herramienta poderosa para la especialización, ya que permite que los desarrolladores de subclases extiendan la funcionalidad de la clase base de manera más eficiente, evitando la necesidad de pasar constantemente por métodos getter o setter cuando se trabaja dentro de la jerarquía familiar del objeto.
+
+En el ejemplo solicitado, al cambiar el atributo nombre de private a protected en la clase Soldado, el Zapador adquiere la capacidad de leer y modificar ese campo directamente. Esto permite que el método ponerMina() construya mensajes más personalizados utilizando el estado heredado sin restricciones de visibilidad, mientras que cualquier otra clase ajena a la jerarquía (como una clase Mercado o Bosque) seguiría viendo el nombre como un dato oculto e inaccesible.
+
+Java
+class Soldado {
+    // Ahora es protegido: visible para hijos y clases del mismo paquete
+    protected String nombre;
+
+    public Soldado(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void saludar() {
+        System.out.println("Soy el soldado " + nombre);
+    }
+}
+
+class Zapador extends Soldado {
+    private int numMinas;
+
+    public Zapador(String nombre, int minas) {
+        super(nombre);
+        this.numMinas = minas;
+    }
+
+    public void ponerMina() {
+        // Acceso directo a 'nombre' gracias a ser protected
+        System.out.println(nombre + " está colocando una de sus " + numMinas + " minas.");
+    }
+}
+A pesar de su utilidad, el uso de miembros protegidos debe hacerse con cautela. Al permitir que las subclases accedan directamente a los atributos, se crea un acoplamiento más fuerte entre la clase padre y sus hijos. Si en el futuro se decide cambiar el tipo de dato de nombre (por ejemplo, de String a una clase Name), todas las subclases que lo usaban directamente dejarán de compilar, lo que supone una pequeña pérdida de la ventaja de encapsulación que ofrecía el acceso estrictamente privado.
+
+## 7. En los lenguajes orientados a objetos ¿hay una **clase base** para todos los objetos? ¿Ocurre en todos los lenguajes? ¿Qué ocurre en Java?
+
+### Respuesta
+
+En el ámbito de la orientación a objetos, el concepto de una raíz jerárquica universal es común, pero no es una regla absoluta en todos los lenguajes. Algunos lenguajes, denominados de jerarquía única o "monolíticos", establecen que toda clase debe descender obligatoriamente de una clase base común. Sin embargo, en lenguajes como C++, la jerarquía es fragmentada; un programador puede crear múltiples árboles de clases independientes entre sí que no comparten un ancestro común a menos que se fuerce explícitamente.
+
+En Java, el diseño sigue de forma estricta el modelo de jerarquía única. Todas las clases, sin excepción, heredan directa o indirectamente de la clase Object (perteneciente al paquete java.lang). Incluso si al definir una clase no se utiliza la palabra reservada extends, el compilador de Java inserta automáticamente extends Object. Esta arquitectura garantiza que todos los elementos en el ecosistema de Java compartan un contrato mínimo de estado y comportamiento, facilitando la gestión de memoria y la interoperabilidad entre diferentes librerías.
+
+La existencia de la clase Object dota a cualquier instancia en Java de métodos fundamentales que son esenciales para el funcionamiento del lenguaje. Métodos como equals(), hashCode(), toString() y getClass() están disponibles en todas las clases, desde un Soldado hasta un simple Array. Esto permite que una referencia de tipo Object pueda apuntar a cualquier instancia de cualquier clase, lo cual es la base de las colecciones de datos genéricas y de la flexibilidad del lenguaje antes de la introducción de los tipos genéricos modernos.
+
+Para un programador con experiencia en C, donde cada struct es un tipo de dato aislado, este concepto representa un cambio significativo. Mientras que en C no existe una forma nativa de crear una función que acepte "cualquier estructura" (salvo mediante el uso de punteros genéricos void* que carecen de seguridad de tipos), en Java la clase Object actúa como ese nexo común, pero manteniendo la estructura y las garantías del sistema de tipos del lenguaje.
+
+## 8. ¿Qué es la **"herencia múltiple"**? ¿Existe en Java herencia múltiple?
+
+### Respuesta
+
+La herencia múltiple es una característica de algunos lenguajes de programación orientada a objetos que permite que una clase herede atributos y comportamientos de más de una superclase simultáneamente. En lenguajes como C++, esto permite que una clase derive de dos o más padres (por ejemplo, que una clase VehiculoAnfibio herede tanto de Coche como de Barco). Aunque parece una solución potente para la reutilización de código, introduce problemas complejos de diseño, siendo el más famoso el "Problema del Diamante", donde surge ambigüedad sobre qué método ejecutar si dos padres definen una función con el mismo nombre.
+
+En Java, no existe la herencia múltiple de clases. El equipo de diseño del lenguaje decidió omitir esta funcionalidad para mantener el sistema simple y robusto, evitando los conflictos de ambigüedad y la complejidad técnica que conlleva la gestión de múltiples jerarquías de estado. En Java, cada clase puede extenderse de una única superclase (herencia simple), lo que garantiza una línea de ascendencia clara y directa, facilitando tanto la lectura del código como la implementación de la máquina virtual.
+
+A pesar de esta restricción, Java ofrece una alternativa para lograr polimorfismo múltiple sin los riesgos de la herencia de estado: las interfaces. Un programador puede hacer que una clase implemente múltiples interfaces, lo que le permite cumplir con varios "contratos" o roles diferentes a la vez. De este modo, aunque un Zapador solo pueda ser un Soldado (herencia de clase), podría actuar también como un Explosivo o un Conductor si implementa dichas interfaces, logrando una flexibilidad similar a la herencia múltiple pero de forma mucho más controlada y segura.
+
+Para un desarrollador habituado a la flexibilidad total de C o C++, esta limitación de Java puede parecer restrictiva al principio. Sin embargo, en la práctica, fomenta el uso de la composición (que ya conoces) sobre la herencia, lo que generalmente conduce a diseños de software más limpios y menos propensos a errores de acoplamiento. La regla en Java es clara: una clase tiene un único padre biológico, pero puede desempeñar tantos trabajos (interfaces) como sea necesario.
+
+## 9. Las excepciones en los lenguajes orientados a objetos son objetos. Por tanto, se pueden crear excepciones personalizadas. Pon un ejemplo en Java de una excepción personalizada (`UsuarioNoEncontradoException`), que sea *no controlada* y que además este compuesto con un `Usuario`, para saber qué `Usuario` dio el problema. Permite además que se pueda incluir la causa, es decir, sobrecarga el constructor para tener una versión que permita añadir la causa subyacente. 
+
+### Respuesta
+
+En los lenguajes orientados a objetos, las excepciones son instancias de clases especializadas, lo que permite tratarlas como cualquier otro objeto. Para crear una excepción personalizada en Java, basta con extender una de las clases de la jerarquía de excepciones existente. Para que la excepción sea no controlada (unckecked), la nueva clase debe heredar de RuntimeException. Esto implica que el compilador no obligará a capturarla con un bloque try-catch ni a declararla en la firma del método con throws, siendo ideal para errores de lógica o estados inesperados del programa.
+
+Al ser una clase convencional, una excepción personalizada puede contener atributos para enriquecer el diagnóstico del error. En el caso de UsuarioNoEncontradoException, incluir un objeto de tipo Usuario mediante composición permite que el manejador de la excepción no solo sepa que ocurrió un error, sino que tenga acceso directo a los datos del sujeto que originó el conflicto. Esto es significativamente más potente que los códigos de error numéricos de C, ya que se transporta el contexto completo del error a través de la pila de llamadas.
+
+La sobrecarga de constructores es fundamental para permitir la propagación de la causa. Al invocar al constructor de la superclase mediante super, se puede pasar un mensaje descriptivo y, opcionalmente, un objeto Throwable que representa la causa original (por ejemplo, una excepción de base de datos que derivó en esta excepción de negocio). Esto mantiene la trazabilidad del error, permitiendo que las herramientas de depuración muestren la cadena completa de fallos que llevaron al problema actual.
+
+Java
+// Excepción personalizada no controlada (Runtime)
+class UsuarioNoEncontradoException extends RuntimeException {
+    // Composición: guardamos el objeto que dio el problema
+    private Usuario usuario;
+
+    // Constructor simple
+    public UsuarioNoEncontradoException(String mensaje, Usuario usuario) {
+        super(mensaje);
+        this.usuario = usuario;
+    }
+
+    // Sobrecarga para permitir incluir la causa (causa subyacente)
+    public UsuarioNoEncontradoException(String mensaje, Usuario usuario, Throwable causa) {
+        super(mensaje, causa);
+        this.usuario = usuario;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+}
+
+## 10. Herencia vs. Composición. Se dice que no se debe emplear herencia simplemente por reutilizar código, es decir, que si quiero reutilizar código simplemente, no debo pensar en herencia como primera opción ¿por qué?
+
+### Respuesta
+
+La preferencia por la composición sobre la herencia radica en el grado de acoplamiento que cada una genera. La herencia se considera una relación "fuerte" y estática; una vez que una clase hereda de otra, queda ligada a su estructura y comportamiento de por vida. Si se utiliza herencia solo para evitar copiar un par de funciones (reutilización de código) sin que exista una relación real de "es-un", se corre el riesgo de heredar métodos y atributos que no tienen sentido en la nueva clase, violando la integridad del modelo y exponiendo comportamientos innecesarios o peligrosos.
+
+Por el contrario, la composición ofrece un acoplamiento "débil" y dinámico. En lugar de ser una extensión de otra clase, un objeto simplemente "tiene-un" ejemplar de otra clase para delegarle tareas. Esto permite cambiar el comportamiento en tiempo de ejecución (cambiando la instancia interna) y mantiene las interfaces limpias, ya que solo se expone lo que realmente se necesita. En lenguajes como C, la composición es la forma natural de trabajar (incluir una struct dentro de otra), y en Java sigue siendo la mejor práctica para construir sistemas flexibles que no se rompan cuando la clase "padre" sufra cambios inesperados.
+
+Un problema crítico de la herencia mal aplicada es la ruptura de la encapsulación. Al heredar, la subclase a menudo depende de los detalles internos de la superclase (especialmente si se usa protected). Si la superclase cambia su lógica interna, puede romper accidentalmente todas las subclases que dependían de ese funcionamiento. La composición protege contra esto, ya que la comunicación entre objetos se realiza estrictamente a través de sus interfaces públicas, tratando al objeto compuesto como una "caja negra".
+
+Finalmente, el uso excesivo de herencia para reutilizar código suele derivar en jerarquías profundas y confusas. Es mucho más sencillo entender un objeto que utiliza tres herramientas distintas (composición) que un objeto que es el resultado de una cadena de cinco padres diferentes, donde cada nivel añade una capa de complejidad. La máxima en el diseño de software moderno es clara: usa la herencia para modelar clasificaciones taxonómicas reales y usa la composición para todo lo demás.
+
+## 11. Herencia vs. Composición. Se dice que se debe *"favorecer la composición frente a la herencia"*, ¿por qué?
+
+### Respuesta
+
+La recomendación de favorecer la composición frente a la herencia se fundamenta en la búsqueda de sistemas más flexibles y menos frágiles. Mientras que la herencia crea una relación de dependencia rígida y permanente en tiempo de compilación (enlace fuerte), la composición permite construir funcionalidades combinando objetos de forma dinámica (enlace débil). En el desarrollo de software, esto significa que es preferible que una clase "tenga" una instancia de otra para delegarle trabajo, en lugar de "ser" una extensión de ella, evitando así quedar atrapado en una jerarquía que podría volverse inadecuada con el tiempo.
+
+Una de las razones principales es evitar la exposición innecesaria de la interfaz. Cuando una clase hereda de otra, arrastra consigo todos los métodos públicos de la superclase, lo que puede resultar en objetos que ofrecen acciones que no tienen sentido en su contexto. Por ejemplo, si se hereda una clase Lista para crear una Pila, el objeto resultante expondría métodos para insertar elementos en cualquier posición, rompiendo la lógica de una pila. Con la composición, la clase Pila simplemente contendría una Lista privada y solo expondría los métodos estrictamente necesarios, manteniendo la integridad del diseño.
+
+Además, la composición resuelve el problema del acoplamiento interno. En la herencia, si la clase base cambia su implementación, existe un riesgo elevado de que las subclases dejen de funcionar correctamente, un fenómeno conocido como el problema de la "clase base frágil". La composición actúa como un escudo, ya que la comunicación entre el objeto contenedor y el contenido se realiza exclusivamente a través de la interfaz pública. Esto permite sustituir el objeto interno por cualquier otro que cumpla el mismo contrato sin que el resto del sistema lo note, algo imposible de lograr con la herencia simple de Java.
+
+Finalmente, la composición facilita enormemente las pruebas unitarias. Es mucho más sencillo probar una clase que recibe sus dependencias como parámetros en el constructor (pudiendo pasar objetos simulados o "mocks") que probar una subclase que está indisolublemente ligada a su padre. En resumen, mientras que la herencia es una herramienta potente para definir taxonomías reales y polimorfismo, la composición es la técnica preferida para construir sistemas modulares, mantenibles y preparados para el cambio.
+
+## 12. Herencia vs. Composición. Se dice que la *"herencia rompe la encapsulación"*, ¿a qué se refiere esto?
+
+### Respuesta
+
+La afirmación de que la herencia rompe la encapsulación se refiere a que la subclase depende de la implementación interna de su superclase para funcionar correctamente. En la programación orientada a objetos ideal, una clase debería ser una "caja negra" donde solo importa su interfaz pública. Sin embargo, en la herencia, el programador de la subclase a menudo necesita conocer cómo están implementados los métodos del padre (por ejemplo, si un método llama internamente a otro) para poder sobrescribirlos sin causar errores lógicos.
+
+Esta dependencia crea un acoplamiento fuerte donde los detalles de implementación de la clase base "se filtran" hacia las hijas. Si en una actualización de la superclase se cambia la lógica interna de un método protegido o la secuencia en la que se invocan sus métodos, es muy probable que las subclases, que antes funcionaban perfectamente, comiencen a comportarse de manera errática. A diferencia de la composición, donde solo se interactúa con el exterior del objeto, la herencia obliga a la subclase a estar íntimamente ligada a las decisiones de diseño del ancestro.
+
+Para un programador con experiencia en C, este fenómeno es comparable a tener una librería donde, para usar una función, no bastara con conocer su prototipo en el .h, sino que hubiera que entender su código fuente en el .c para no corromper el estado global. En Java, el uso de miembros protected agrava esta situación, ya que permite que la subclase manipule directamente variables del padre, eliminando la barrera de seguridad que la encapsulación privada debería proporcionar.
+
+Por esta razón, se dice que la herencia es una técnica de "caja blanca", mientras que la composición es de "caja negra". Al romper esta barrera de aislamiento, el sistema se vuelve más difícil de mantener: un pequeño cambio en la raíz de la jerarquía puede propagar errores en cascada hacia todas las ramas de herencia, forzando una revisión masiva de código que la encapsulación pura habría evitado.
+
+## 13. Pongamos un ejemplo de dos alternativas para lo mismo. Tenemos un `Estudiante` y un `Trabajador`, ambos tienen datos en común: el DNI y el nombre. Modelemos esto de dos formas: uno por herencia, con una superclase `Persona`, y otro con composición, con una clase `DatosPersonales`. Se debe recibir una instancia de `DatosPersonales` en el constructor de la clase `Estudiante` y `Trabajador`.
+
+### Respuesta
+
+Para modelar este escenario, se presentan dos enfoques arquitectónicos que resuelven el problema de la duplicidad de datos (DNI y nombre) de maneras fundamentalmente distintas, afectando la flexibilidad y la estructura del sistema.
+
+Opción A: Modelo por Herencia
+En este modelo, se establece una jerarquía donde Persona actúa como la clase base que encapsula el estado común. Al utilizar la palabra reservada extends, tanto Estudiante como Trabajador heredan automáticamente la identidad de Persona. Esto significa que cualquier instancia de Estudiante es una Persona a todos los efectos legales del sistema de tipos de Java, permitiendo, por ejemplo, guardarlos en un mismo array de tipo Persona[].
+
+Java
+class Persona {
+    private String dni;
+    private String nombre;
+
+    public Persona(String dni, String nombre) {
+        this.dni = dni;
+        this.nombre = nombre;
+    }
+    // Getters...
+}
+
+class Estudiante extends Persona {
+    private double notaMedia;
+
+    public Estudiante(String dni, String nombre, double notaMedia) {
+        super(dni, nombre); // Inicializa la parte de Persona
+        this.notaMedia = notaMedia;
+    }
+}
+Opción B: Modelo por Composición
+En el enfoque por composición, se crea una clase independiente llamada DatosPersonales. En lugar de "ser" una persona, el Estudiante y el Trabajador tienen un objeto de este tipo como un atributo interno. El constructor de las clases concretas recibe esta instancia ya creada, lo que permite una mayor modularidad: se podrían compartir los mismos datos personales entre diferentes roles o incluso cambiar los datos en tiempo de ejecución sin destruir el objeto principal.
+
+Java
+class DatosPersonales {
+    private String dni;
+    private String nombre;
+
+    public DatosPersonales(String dni, String nombre) {
+        this.dni = dni;
+        this.nombre = nombre;
+    }
+    // Getters...
+}
+
+class Trabajador {
+    private DatosPersonales datos; // Composición
+    private double sueldo;
+
+    public Trabajador(DatosPersonales datos, double sueldo) {
+        this.datos = datos;
+        this.sueldo = sueldo;
+    }
+}
+La diferencia clave reside en que la herencia es más rígida pero permite polimorfismo directo (tratar a todos como Persona), mientras que la composición es más flexible y evita los problemas de acoplamiento, aunque requiere delegar explícitamente las llamadas si se desea acceder al nombre o DNI desde el objeto contenedor. En C, la composición sería equivalente a incluir una struct DatosPersonales dentro de una struct Trabajador.
