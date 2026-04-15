@@ -1,0 +1,323 @@
+<!--
+Posible prompt:
+<prompt>
+Tengo un cuestionario con preguntas sobre "Polimorfismo". Debes tener en cuenta que los conocimientos previos que tengo (y por tanto tus respuestas deben ser adaptadas), son:
+- C/C++ sin orientación a objetos.
+- Temas de Java previos: Clases y Objetos, Encapsulación, Excepciones, Composición y Herencia.
+
+Cada respuesta debe tener entre 2 - 4 párrafos de longitud (sin contar los trozos de código).
+
+Por favor, escribe en impersonal las respuestas.
+
+</prompt>
+----
+-->
+# Tema 5. Polimorfismo
+
+## 1. Brevemente, ¿qué es el **"polimorfismo"** y para qué sirve en programación orientada a objetos? ¿qué es la **"sobreescritura"** de métodos?
+
+### Respuesta
+
+El polimorfismo es una propiedad de la programación orientada a objetos que permite que un mismo nombre o interfaz represente comportamientos distintos dependiendo del objeto que se esté utilizando. En términos prácticos, significa que una variable de una clase superior (superclase) puede referenciar a objetos de cualquiera de sus subclases. Para quien proviene de C, esto se puede visualizar como una evolución conceptual de las funciones que operan sobre diferentes estructuras, pero con la capacidad de que el sistema determine automáticamente qué versión del comportamiento ejecutar en tiempo de ejecución.
+
+La utilidad principal de esta característica radica en la flexibilidad y escalabilidad del código. Permite escribir programas que interactúen con categorías generales de objetos sin necesidad de conocer los detalles específicos de cada implementación. Al invocar un método sobre una referencia general, el programa ejecutará la lógica específica de la subclase correspondiente, lo que facilita enormemente la extensión del software: se pueden añadir nuevas funcionalidades o tipos de datos simplemente creando nuevas subclases, sin tener que modificar la lógica principal ya existente.
+
+Por otro lado, la sobreescritura (o overriding) es el mecanismo técnico que hace posible el polimorfismo dinámico. Ocurre cuando una subclase define un método que ya existe en su superclase, manteniendo exactamente la misma firma (nombre, tipo de retorno y parámetros). Al hacer esto, la implementación de la subclase "reemplaza" a la de la clase padre para esa instancia específica. Es fundamental no confundirla con la sobrecarga, donde lo que cambia son los argumentos; aquí se busca que el objeto hijo aporte su propia versión especializada de una acción general.
+
+Java
+class Animal {
+    void emitirSonido() {
+        System.out.println("Sonido genérico");
+    }
+}
+
+class Perro extends Animal {
+    @Override
+    void emitirSonido() {
+        System.out.println("Guau");
+    }
+}
+
+## 2. ¿En qué consiste la **"ligadura dinámica"** o **"enlace tardío"**? ¿qué relación tiene con el polimorfismo? ¿hay que indicarlos explícitamente al programar o depende esto del lenguaje? Compara C++ y Java. Indicalo después también para Python.
+
+### Respuesta
+
+La ligadura dinámica o enlace tardío es el mecanismo por el cual la asociación entre la llamada a un método y su implementación real se resuelve durante la ejecución del programa, en lugar de hacerlo durante la compilación. En lenguajes estructurados como C, lo habitual es la ligadura estática, donde el compilador sabe exactamente qué dirección de memoria corresponde a cada función. En cambio, con la ligadura dinámica, el sistema consulta en tiempo de ejecución el tipo real del objeto al que apunta una referencia para decidir qué versión del método debe ejecutar.
+
+La relación con el polimorfismo es absoluta, ya que la ligadura dinámica es la tecnología que permite que el polimorfismo ocurra. Sin ella, aunque una variable de tipo Animal apuntara a un objeto Perro, el programa ejecutaría siempre los métodos de la clase Animal. Gracias al enlace tardío, el entorno de ejecución "espera" hasta el último momento para verificar la identidad del objeto, permitiendo que las especializaciones de las subclases cobren vida y otorgando así el comportamiento polimórfico característico de la orientación a objetos.
+
+En cuanto a su implementación, la necesidad de indicarlo explícitamente varía según el lenguaje. En C++, el programador debe marcar los métodos con la palabra clave virtual en la clase base para habilitar la ligadura dinámica; de lo contrario, se aplica ligadura estática por defecto para ganar eficiencia. En Java, la situación es opuesta: todos los métodos no estáticos son, por defecto, "virtuales". Esto significa que la ligadura dinámica es el comportamiento estándar y no requiere de ninguna palabra clave especial, a menos que se quiera evitar mediante el uso de final.
+
+Por último, en Python, la ligadura dinámica es inherente a la propia naturaleza del lenguaje. Al ser un lenguaje de tipado dinámico, no existe el concepto de declarar tipos de forma rígida, por lo que todas las resoluciones de métodos ocurren en tiempo de ejecución. En Python no existe una palabra clave para indicar este comportamiento ni se puede forzar una ligadura estática al estilo de C++, lo que simplifica la sintaxis pero traslada toda la responsabilidad de la coherencia de los tipos al programador y al intérprete durante la ejecución.
+
+## 3. Pon un ejemplo sencillo en Java, de un `Soldado`, con un método `saluda`, con dos subclases: `Zapador` y `Artillero`, donde `Zapador` sobreescribe el método `saludar`, sustituyendo por completo su comportamiento. Ilustra el funcionamiento del polimorfismo creando un array de `Soldados` de dos tipos y luego recorriéndolo empleando referencias de tipo `Soldado` y llamando a `saludar`.
+
+### Respuesta
+
+Para ilustrar el polimorfismo, se define primero una clase base denominada Soldado. Esta clase contiene un método saludar() con una implementación genérica. Las subclases Zapador y Artillero heredan de ella, pero solo la clase Zapador realiza una sobreescritura explícita para modificar el mensaje. En el caso de Artillero, al no redefinir el método, heredará automáticamente el comportamiento de la superclase.
+
+El aspecto clave del ejemplo reside en la creación de un array de tipo Soldado. Aunque el array está declarado para almacenar referencias de la clase padre, es capaz de contener instancias de los hijos gracias a la relación de herencia ("un Zapador es un Soldado"). Al recorrer el array mediante un bucle, se utiliza una referencia única de tipo Soldado para invocar el método saludar(), delegando en la ligadura dinámica la ejecución del comportamiento correcto según el tipo real de cada objeto.
+
+Java
+// Clase base
+class Soldado {
+    void saludar() {
+        System.out.println("Soldado presentándose, ¡señor!");
+    }
+}
+
+// Subclase que sobreescribe el comportamiento
+class Zapador extends Soldado {
+    @Override
+    void saludar() {
+        System.out.println("Zapador listo para el desminado.");
+    }
+}
+
+// Subclase que hereda el comportamiento base
+class Artillero extends Soldado {
+    // No sobreescribe saludar(), usa el de la superclase
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // Creación del array polimórfico
+        Soldado[] peloton = new Soldado[2];
+        peloton[0] = new Zapador();
+        peloton[1] = new Artillero();
+
+        // Recorrido empleando referencias de tipo Soldado
+        for (Soldado s : peloton) {
+            s.saludar(); 
+            // La salida será:
+            // "Zapador listo para el desminado."
+            // "Soldado presentándose, ¡señor!"
+        }
+    }
+}
+Este código demuestra que el programador no necesita verificar manualmente si el soldado actual es un zapador o un artillero para decidir qué mensaje mostrar. El entorno de ejecución de Java detecta que la primera posición del array contiene un Zapador y ejecuta su versión específica, mientras que en la segunda posición ejecuta la versión base al no encontrar una sobreescritura en Artillero.
+
+## 4. Si sobreescribo un método, ¿puedo invocar el método base para trabajar a partir de su resultado? Haz que zapador cambie ligeramente la forma de saludar, que salude de forma normal, tal cual hace el soldado base, pero que además añada un "ZAPADOR A SUS ORDENES" ¿qué palabra clave del lenguaje has usado para invocar al método de la clase base?
+
+### Respuesta
+
+Es totalmente posible invocar el método de la clase base desde una subclase que lo ha sobreescrito. Esta técnica es muy común cuando se desea realizar una especialización en lugar de una sustitución completa; es decir, cuando se quiere aprovechar la lógica que ya existe en la superclase y simplemente añadir funcionalidad adicional antes o después de dicha ejecución.
+
+Para lograr esto en Java, se utiliza la palabra clave super. Esta palabra actúa como una referencia a la instancia de la clase padre, permitiendo acceder a sus métodos y atributos incluso si han sido ocultados o sobreescritos en la clase hija. En el contexto de un método sobreescrito, llamar a super.nombreDelMetodo() asegura que se ejecute la versión original definida en la jerarquía superior.
+
+A continuación, se muestra cómo se modificaría la clase Zapador para que primero ejecute el saludo estándar del Soldado y luego añada su frase específica:
+
+Java
+class Zapador extends Soldado {
+    @Override
+    void saludar() {
+        // Se invoca el comportamiento de la clase base (Soldado)
+        super.saludar(); 
+        
+        // Se añade la funcionalidad extra específica de esta subclase
+        System.out.println("ZAPADOR A SUS ORDENES");
+    }
+}
+Al utilizar esta estructura, se mantiene la cohesión del código y se evita la duplicación de lógica. Si en el futuro se decidiera cambiar el saludo general de todos los soldados en la clase base, el Zapador se actualizaría automáticamente en su primera parte, manteniendo siempre su distintivo final.
+
+## 5. Al sobreescribir un método en Java, ¿qué restricciones existen sobre los tipos de los parámetros y el tipo de retorno? ¿Qué diferencia hay entre sobreescritura (*overriding*) y sobrecarga (*overloading*)? ¿Para qué sirve la anotación `@Override` y por qué es recomendable usarla siempre?
+
+### Respuesta
+
+Al sobreescribir un método en Java, existen restricciones estrictas para asegurar que la jerarquía de clases mantenga la coherencia. En cuanto a los parámetros, deben ser exactamente los mismos en cantidad, orden y tipo que los del método original en la superclase; si se cambia un solo parámetro, el compilador interpretará que se está creando un método nuevo en lugar de redefinir el anterior. Respecto al tipo de retorno, este debe ser idéntico o, en versiones modernas de Java, ser un tipo "covariante" (una subclase del tipo de retorno original), lo que permite cierta flexibilidad manteniendo la compatibilidad.
+
+Es fundamental distinguir la sobreescritura de la sobrecarga. La sobrecarga ocurre dentro de una misma clase cuando existen varios métodos con el mismo nombre pero con distintos parámetros (en cantidad o tipo); es una resolución en tiempo de compilación. Por el contrario, la sobreescritura se da siempre entre una superclase y una subclase, manteniendo la firma idéntica para permitir el polimorfismo, y se resuelve en tiempo de ejecución mediante la ligadura dinámica.
+
+La anotación @Override actúa como una directiva para el compilador que indica explícitamente la intención de redefinir un método de la clase padre. No es obligatoria para que el código funcione, pero su uso es una de las mejores prácticas en Java. Si se intenta sobreescribir un método y se comete un error tipográfico en el nombre o en los parámetros, el compilador generará un error de inmediato al no encontrar un método coincidente en la superclase, evitando así errores lógicos difíciles de detectar.
+
+Además de la detección de errores, el uso de @Override mejora significativamente la legibilidad del código para otros programadores. Al ver la anotación, queda claro que ese método forma parte de un comportamiento polimórfico y que cualquier cambio en la firma del método en la clase base podría afectar a esa implementación. En definitiva, es un seguro de vida contra errores de sintaxis que podrían romper el comportamiento esperado del programa en tiempo de ejecución.
+
+## 6. Entonces, cuando se estudia Java, ¿se emplea el polimorfismo desde el principio? Por ejemplo, sobreescribiendo `toString` o sobreescribiendo `equals`, ¿ya estoy usando polimorfismo?
+
+### Respuesta
+
+Efectivamente, el polimorfismo se utiliza en Java prácticamente desde la creación del primer programa, incluso antes de que el programador sea consciente de ello. Esto se debe a que en Java existe una jerarquía universal: todas las clases, sin excepción, heredan de la clase base Object. Al definir una clase propia, esta ya posee métodos como toString(), equals() o hashCode(). Cuando se decide implementar una versión personalizada de estos métodos para que muestren los datos de un objeto de forma legible, se está realizando una sobreescritura que permite el comportamiento polimórfico.
+
+Un ejemplo muy claro de esto ocurre al utilizar métodos del sistema como System.out.println(miObjeto). Internamente, este método recibe una referencia de tipo Object e invoca al método toString(). Gracias a la ligadura dinámica, el sistema no ejecuta el toString() genérico de la clase Object (que suele mostrar una dirección de memoria), sino la versión específica que se haya definido en la clase del objeto. Por lo tanto, cada vez que se personaliza la representación de una clase, se está alimentando el motor polimórfico del lenguaje.
+
+Del mismo modo, el método equals() es fundamental para el polimorfismo en el contexto de las colecciones de datos. Muchas estructuras internas de Java necesitan comparar objetos para buscarlos o eliminarlos. Al sobreescribir equals(), se le indica al lenguaje cómo debe comparar dos instancias de esa clase específica. Así, aunque la estructura de datos maneje referencias genéricas, utilizará la lógica de comparación personalizada que se haya programado, permitiendo que el sistema se comporte de manera inteligente y específica para cada tipo de dato creado.
+
+En resumen, no es necesario diseñar complejas jerarquías de soldados o animales para experimentar el polimorfismo. Al formar parte de la arquitectura base de Java mediante la clase Object, cualquier tarea de personalización de métodos estándar es, técnicamente, una aplicación práctica de este pilar de la orientación a objetos. Se trata de una herramienta que garantiza que los objetos siempre conserven su identidad y comportamiento, independientemente de cómo sean referenciados por el sistema.
+
+## 7. ¿Qué es una **"clase abstracta"**? ¿Qué es un **"método abstracto"**? ¿Puedo crear instancias de una clase abstracta? Pongamos un ejemplo en Java: Redefinamos `Soldado`, hagamos que, además del método `saluda` que ya tenía, tenga un método `atacar`, que sea abstracto y que cada tipo de soldado haga su acción cuando se le pida atacar. ¿Donde debemos poner `abstract`?
+
+### Respuesta
+
+Una clase abstracta es una clase que no representa un objeto concreto, sino un concepto general o una plantilla para otras clases. Se utiliza cuando se desea definir una base común para una jerarquía, pero dicha base es demasiado incompleta o genérica para existir por sí sola. Por otro lado, un método abstracto es una declaración de un método que no tiene implementación (no tiene cuerpo); es simplemente una firma que obliga a las subclases a proporcionar su propia lógica específica.
+
+No es posible crear instancias de una clase abstracta mediante el operador new. Si se intentara hacer new Soldado(), el compilador de Java generaría un error, ya que la clase no está totalmente definida. Sin embargo, aunque no se puedan crear objetos de ese tipo, sí se pueden declarar variables y arrays de tipo Soldado para aprovechar el polimorfismo, almacenando en ellos objetos de las subclases concretas que sí han implementado los métodos faltantes.
+
+Para implementar este diseño, se debe colocar la palabra clave abstract tanto en la declaración de la clase como en la declaración del método que no tiene cuerpo. Al marcar el método atacar como abstracto, se está estableciendo un "contrato": cualquier clase que herede de Soldado deberá implementar obligatoriamente su propia versión de atacar o, de lo contrario, también tendrá que ser declarada como abstracta.
+
+Java
+// Se añade 'abstract' a la clase para que sea una plantilla
+abstract class Soldado {
+    void saludar() {
+        System.out.println("Soldado presentándose.");
+    }
+
+    // Se añade 'abstract' al método y se termina con punto y coma
+    abstract void atacar(); 
+}
+
+class Zapador extends Soldado {
+    @Override
+    void atacar() {
+        System.out.println("Colocando cargas explosivas.");
+    }
+}
+
+class Artillero extends Soldado {
+    @Override
+    void atacar() {
+        System.out.println("Disparando cañón de largo alcance.");
+    }
+}
+
+## 8. ¿Qué efecto tiene la palabra clave `final` sobre métodos y clases en Java? ¿Cómo se relaciona con el polimorfismo? ¿Conoces algún ejemplo de clase `final` en la propia API estándar de Java?
+
+### Respuesta
+
+En Java, la palabra clave final actúa como un modificador de restricción que impide la modificación o extensión de ciertos elementos. Cuando se aplica a una clase, significa que dicha clase no puede tener descendencia; es decir, ninguna otra clase puede heredar de ella. Cuando se aplica a un método, impide que las subclases puedan sobreescribirlo, garantizando que la implementación definida en la clase original se mantenga intacta e inalterable en toda la jerarquía.
+
+La relación de final con el polimorfismo es de limitación o anulación. Dado que el polimorfismo dinámico se basa en la capacidad de las subclases para redefinir comportamientos (sobreescritura) y en la existencia de jerarquías de herencia, el uso de final corta estas posibilidades. Se utiliza principalmente por razones de seguridad y diseño para asegurar que el comportamiento de un objeto sea predecible y que no pueda ser alterado mediante técnicas de herencia que podrían comprometer la integridad del sistema.
+
+Un ejemplo emblemático de clase final en la API estándar de Java es la clase String. Los diseñadores del lenguaje decidieron que String fuera inmutable y final para evitar que alguien pudiera crear una subclase que alterara el comportamiento básico de las cadenas de texto, lo cual es crítico dado que las cadenas se usan constantemente para la seguridad del sistema (como en la gestión de contraseñas o conexiones de red). Otras clases comunes que comparten esta característica son las clases envolventes como Integer, Double y Boolean.
+
+En resumen, mientras que el polimorfismo busca maximizar la flexibilidad y la extensión del código, la palabra clave final busca establecer límites claros. Es una herramienta de diseño que permite a quien programa decidir qué partes del sistema deben permanecer fijas, protegiendo la lógica crítica frente a posibles modificaciones no deseadas en niveles inferiores de la jerarquía.
+
+## 9. En Java, qué son las **"interfaces"**? ¿Son como clases abstractas? ¿Una clase puede implementar más de una interfaz?
+
+### Respuesta
+
+Las interfaces en Java son estructuras que definen un contrato de comportamiento sin implementar la lógica. Se pueden imaginar como una colección de firmas de métodos que una clase "promete" realizar. A diferencia de las clases, que definen lo que un objeto es, las interfaces suelen definir lo que un objeto puede hacer. Para alguien con experiencia en C, una interfaz actúa de forma similar a un archivo de cabecera que solo contiene prototipos, obligando a quien lo use a escribir el cuerpo de todas esas funciones.
+
+Aunque guardan similitudes con las clases abstractas, existen diferencias clave. Una clase abstracta puede tener variables de instancia (estado) y métodos con lógica ya escrita; en cambio, las interfaces están diseñadas para la abstracción pura (aunque en versiones modernas de Java pueden tener métodos por defecto, no pueden almacenar estados). Mientras que una clase abstracta se usa para representar una identidad compartida en una jerarquía de herencia ("un Zapador es un Soldado"), una interfaz se usa para capacidades transversales que pueden compartir clases totalmente distintas ("un Soldado y un dron pueden ser Reparables").
+
+Una de las ventajas más potentes de las interfaces es que una clase puede implementar múltiples interfaces simultáneamente. Java no permite la herencia múltiple de clases para evitar conflictos de ambigüedad (el famoso "problema del diamante"), pero permite que una clase adquiera múltiples comportamientos a través de interfaces. Por ejemplo, una clase RobotMilitar podría heredar de la clase Maquina e implementar las interfaces Atacante, Conductor y Localizable al mismo tiempo.
+
+Java
+interface Operativo {
+    void desplegar();
+}
+
+interface Comunicador {
+    void enviarReporte();
+}
+
+// Una clase puede cumplir con varios contratos a la vez
+class ZapadorEspecializado extends Soldado implements Operativo, Comunicador {
+    @Override
+    public void desplegar() {
+        System.out.println("Desplegando en zona de conflicto.");
+    }
+
+    @Override
+    public void enviarReporte() {
+        System.out.println("Reporte enviado por radio.");
+    }
+    
+    @Override
+    void atacar() {
+        System.out.println("Ataque con explosivos.");
+    }
+}
+Este sistema permite un nivel de polimorfismo muy flexible. Se puede tener un array de tipo Comunicador y almacenar en él tanto a un Soldado como a un RadioTransmisor o un Satélite, siempre que todos implementen dicha interfaz. Al recorrer el array y llamar a enviarReporte(), cada objeto responderá según su propia naturaleza, independientemente de su posición en la jerarquía de clases.
+
+## 10. Vamos a poner un ejemplo nuevo con polimorfismo. Queremos implementar una clase `Punto`, con un método `calcularDistanciaA`, que permite calcular la distancia a otro `Punto`. Sin embargo, como queremos trabajar con puntos 2D y 3D, haz que ese método sea abstracto y haya dos implementaciones de ese cálculo de distancia. Emplea `instanceof` y *downcasting* para verificar que se recibe un punto compatible y poder calcular correctamente la distancia siempre entre puntos del mismo subtipo. Aprovecha este diseño para crear ahora una clase `Linea`, que acepta `Punto`, sin saber de qué tipo es, y es capaz de dar su longitud independientemente de las dimensiones de sus puntos (las cuales desconoce).
+
+### Respuesta
+
+Para implementar este diseño, se define la clase Punto como una clase abstracta. El método calcularDistanciaA(Punto otro) actúa como el contrato polimórfico: cualquier sistema que maneje puntos podrá solicitar la distancia hacia otro, sin importar la dimensión en la que se encuentren. La clave reside en que la firma del método acepta un parámetro de tipo genérico Punto, lo que permite que la clase Linea pueda operar con ellos de forma agnóstica.En las implementaciones concretas, Punto2D y Punto3D, se utiliza la palabra clave instanceof para verificar en tiempo de ejecución si el punto recibido como argumento es del mismo subtipo que la instancia actual. Tras esta comprobación de seguridad, se aplica un downcasting (o conversión explícita hacia abajo) para tratar al objeto como su tipo específico y así poder acceder a sus coordenadas particulares ($x, y$ o $z$), las cuales no están presentes en la clase base abstracta.Javaabstract class Punto {
+    abstract double calcularDistanciaA(Punto otro);
+}
+
+class Punto2D extends Punto {
+    double x, y;
+    Punto2D(double x, double y) { this.x = x; this.y = y; }
+
+    @Override
+    double calcularDistanciaA(Punto otro) {
+        if (otro instanceof Punto2D) {
+            Punto2D p2 = (Punto2D) otro; // Downcasting
+            return Math.sqrt(Math.pow(p2.x - this.x, 2) + Math.pow(p2.y - this.y, 2));
+        }
+        return -1; // Error: tipos incompatibles
+    }
+}
+
+class Punto3D extends Punto {
+    double x, y, z;
+    Punto3D(double x, double y, double z) { this.x = x; this.y = y; this.z = z; }
+
+    @Override
+    double calcularDistanciaA(Punto otro) {
+        if (otro instanceof Punto3D) {
+            Punto3D p3 = (Punto3D) otro; // Downcasting
+            return Math.sqrt(Math.pow(p3.x - this.x, 2) + Math.pow(p3.y - this.y, 2) + Math.pow(p3.z - this.z, 2));
+        }
+        return -1;
+    }
+}
+Finalmente, la clase Linea demuestra la potencia del polimorfismo puro. Al contener dos atributos de tipo Punto, la línea no necesita saber si está en un espacio bidimensional o tridimensional. El método obtenerLongitud() simplemente delega la responsabilidad del cálculo al método calcularDistanciaA. Gracias a la ligadura dinámica, se ejecutará automáticamente la lógica de Pitágoras en 2D o en 3D según el objeto real que se haya pasado al constructor, manteniendo el código de Linea totalmente limpio y reutilizable.Javaclass Linea {
+    Punto p1, p2;
+
+    Linea(Punto p1, Punto p2) {
+        this.p1 = p1;
+        this.p2 = p2;
+    }
+
+    double obtenerLongitud() {
+        return p1.calcularDistanciaA(p2); // Polimorfismo en acción
+    }
+}
+
+## 11. ¿Qué es la **"herencia de interfaces"** en Java? ¿Existe **"herencia múltiple de interfaces"**? Pon un ejemplo de una interfaz `Fichero` que tenga un método para leer su contenido en forma de `String` y luego dicha interfaz sea extendida por otra que sea `FicheroEscribible` que permita enviar contenido e incluso eliminar el fichero.
+
+### Respuesta
+
+La herencia de interfaces es un mecanismo en Java que permite que una interfaz herede las firmas de métodos de otra, utilizando para ello la palabra clave extends. A diferencia de las clases, donde la herencia se utiliza para compartir implementación y estado, en las interfaces se emplea para crear jerarquías de capacidades. Esto significa que una interfaz "hija" representa una versión más especializada o funcional que su "padre", obligando a cualquier clase que la implemente a cumplir con todos los métodos de la cadena de herencia.
+
+En Java, a diferencia de la herencia de clases, sí existe la herencia múltiple de interfaces. Una interfaz puede extender varias interfaces simultáneamente (por ejemplo, interface C extends A, B). Esto es posible porque las interfaces no contienen lógica de implementación conflictiva; simplemente acumulan una lista de requisitos que la clase final deberá satisfacer. Es una herramienta muy potente para combinar diferentes contratos de comportamiento en un solo tipo de dato sin incurrir en los problemas de ambigüedad de C++.
+
+A continuación se presenta el ejemplo solicitado, donde se observa cómo la interfaz FicheroEscribible amplía la funcionalidad básica de lectura para añadir capacidades de escritura y borrado:
+
+Java
+// Interfaz base con capacidad de lectura
+interface Fichero {
+    String leerContenido();
+}
+
+// Interfaz que extiende a la anterior (Herencia de interfaces)
+interface FicheroEscribible extends Fichero {
+    void escribirContenido(String nuevoContenido);
+    void eliminar();
+}
+
+// Una clase concreta debe implementar todos los métodos de la jerarquía
+class DocumentoTexto implements FicheroEscribible {
+    private String texto = "";
+
+    @Override
+    public String leerContenido() {
+        return texto;
+    }
+
+    @Override
+    public void escribirContenido(String nuevoContenido) {
+        this.texto = nuevoContenido;
+        System.out.println("Texto actualizado.");
+    }
+
+    @Override
+    public void eliminar() {
+        this.texto = null;
+        System.out.println("Contenido del fichero eliminado.");
+    }
+}
+Este diseño permite aplicar el polimorfismo en diferentes niveles. Se puede tener un método que solo necesite leer datos y que acepte un parámetro de tipo Fichero; este método podrá recibir tanto objetos que solo lean como objetos de tipo DocumentoTexto. Sin embargo, si un método necesita realizar modificaciones, solicitará un objeto de tipo FicheroEscribible, asegurándose de que cualquier objeto que reciba tiene implementados los métodos de escritura y borrado necesarios.
