@@ -1,0 +1,434 @@
+<!--
+Posible prompt:
+<prompt>
+Tengo un cuestionario con preguntas sobre "Genericidad". Debes tener en cuenta que los conocimientos previos que tengo (y por tanto tus respuestas deben ser adaptadas), son:
+- C/C++ sin orientación a objetos.
+- Temas de Java previos: clases y objetos, encapsulación, excepciones, composición, herencia y polimorfismo.
+
+Cada respuesta debe tener entre 2 - 4 párrafos de longitud (sin contar los trozos de código).
+
+Por favor, escribe en impersonal las respuestas.
+
+</prompt>
+----
+-->
+# TEMA 6. Genericidad
+
+## 1. Empleando `void*` en C o `Object` en Java, pon un ejemplo de una estructura de datos, que empleando un array primitivo, permita alojar cualquier tipo de dato.
+
+### Respuesta
+
+En el lenguaje C, el uso de punteros genéricos void* permite que una estructura de datos almacene direcciones de memoria sin especificar el tipo de contenido. Al definir un array de punteros void*, se crea una colección capaz de apuntar a cualquier entidad, ya sea un entero, un flotante o una estructura personalizada. Sin embargo, esta flexibilidad traslada toda la responsabilidad de la gestión de tipos al programador, quien debe realizar conversiones de tipo (casting) explícitas y controlar manualmente la liberación de la memoria dinámica para evitar fugas.
+
+A continuación se presenta un ejemplo conceptual en C:
+
+C
+typedef struct {
+    void** elementos;
+    int capacidad;
+    int ocupacion;
+} ContenedorGenerico;
+En el ecosistema de Java, se utiliza la clase Object como raíz de toda la jerarquía de herencia para lograr un comportamiento similar. Dado que cualquier clase en Java hereda de Object, un array de tipo Object[] puede almacenar instancias de cualquier clase, aprovechando el polimorfismo de herencia. A diferencia de C, Java facilita el manejo de tipos primitivos mediante el autoboxing, que envuelve automáticamente valores como int o double en sus respectivas clases de envoltura (Integer, Double).
+
+Ejemplo de implementación en Java:
+
+Java
+public class Almacen {
+    private Object[] datos;
+    private int contador = 0;
+
+    public Almacen(int tam) {
+        datos = new Object[tam];
+    }
+
+    public void añadir(Object obj) {
+        if (contador < datos.length) {
+            datos[contador++] = obj;
+        }
+    }
+}
+Este enfoque, aunque funcional, presenta desventajas importantes tanto en C como en Java. El principal inconveniente es la pérdida de la seguridad de tipos en tiempo de compilación, lo que obliga a realizar comprobaciones constantes durante la ejecución para evitar errores graves, como el acceso a memoria inválida o excepciones de tipo ClassCastException. La genericidad moderna surge precisamente para resolver estas limitaciones, permitiendo la reutilización de código sin sacrificar la robustez del tipado.
+
+## 2. Brevemente, ¿Qué significa la **programación genérica**? ¿Es el ejemplo anterior un ejemplo básico de programación genérica? 
+
+### Respuesta
+
+La programación genérica es un paradigma de desarrollo de software que permite diseñar algoritmos y estructuras de datos de manera abstracta, independientemente de los tipos de datos específicos sobre los que operan. El objetivo fundamental es maximizar la reutilización del código sin sacrificar la seguridad de tipos. En lugar de escribir una versión de una lista para enteros y otra para cadenas, se define una única implementación donde el tipo se trata como un parámetro, el cual se especifica únicamente en el momento de instanciar la clase o invocar el método.
+
+En el contexto de Java, este paradigma se implementa mediante el uso de "tipos parametrizados". Esto permite que el compilador realice comprobaciones automáticas, garantizando que solo se introduzcan elementos del tipo esperado en una colección. Al aplicar este enfoque, se elimina la necesidad de realizar conversiones de tipo manuales y se detectan posibles errores de incompatibilidad durante la fase de compilación, en lugar de que ocurran fallos inesperados durante la ejecución del programa.
+
+Respecto al ejemplo anterior basado en void* u Object, se puede considerar un precursor o una forma rudimentaria de lograr generalización, pero no constituye programación genérica en el sentido estricto del término. Aunque permite la reutilización de la estructura para diferentes datos, carece de la característica esencial de la genericidad moderna: el mantenimiento del tipado fuerte. En el ejemplo anterior, el contenedor "olvida" qué tipo de objeto está guardando, tratándolo simplemente como una entidad genérica, lo que degrada la robustez del código.
+
+Por lo tanto, mientras que el uso de Object se apoya exclusivamente en el polimorfismo de herencia para ofrecer flexibilidad, la programación genérica real añade una capa de inteligencia al compilador. La verdadera genericidad asegura que, si se crea un contenedor para un tipo específico, no se pueda insertar accidentalmente uno distinto, algo que el ejemplo del array de Object no puede prevenir por sí solo.
+
+## 3. Indica los problemas respecto al chequeo de tipos, de emplear `void*` o `Object` cuando se crean estructuras de datos genéricas. 
+
+### Respuesta
+
+El principal problema de emplear void* en C o Object en Java es la anulación del chequeo de tipos en tiempo de compilación. Al utilizar estos mecanismos, el compilador pierde la capacidad de verificar si los datos que se introducen o se extraen de la estructura son coherentes entre sí. Esto transforma errores que deberían ser detectados inmediatamente durante el desarrollo en fallos críticos de ejecución, los cuales son mucho más difíciles de depurar y pueden comprometer la estabilidad de todo el sistema.
+
+En el caso de Java, el uso de Object obliga a realizar una conversión de tipo explícita (downcasting) cada vez que se recupera un elemento. Si por error se inserta un objeto de una clase no esperada, el compilador no emitirá ninguna advertencia, pero el programa lanzará una excepción ClassCastException al intentar procesar ese dato. En C, la situación es aún más peligrosa, ya que un cast incorrecto de un void* puede resultar en una interpretación errónea de los bytes en memoria, provocando comportamientos impredecibles o errores de segmentación.
+
+Otro inconveniente significativo es la falta de semántica y claridad en el código. Cuando una estructura de datos está definida mediante Object, no existe un contrato claro que indique qué tipo de elementos debe contener. Esto obliga a los programadores a depender de documentación externa o de comprobaciones manuales mediante el operador instanceof. En contraste, la programación genérica permite que la propia firma de la clase o método actúe como una restricción de seguridad, asegurando que el contenedor sea homogéneo y previsible.
+
+Finalmente, este enfoque basado en la raíz de la jerarquía afecta a la mantenibilidad y legibilidad del software. El código se llena de comprobaciones de seguridad y bloques de control de errores que no añaden valor a la lógica de negocio, sino que solo intentan mitigar las debilidades del sistema de tipos. La genericidad real soluciona esto permitiendo que el programador exprese su intención claramente, dejando que sea el compilador quien se encargue de garantizar que las reglas de tipado se cumplan estrictamente.
+
+## 4. Vamos entonces con mecanismos de mejora de la programación genérica ¿Qué son los **parámetros de tipo**? 
+
+### Respuesta
+
+Los parámetros de tipo son marcadores de posición o "comodines" que se utilizan en la definición de clases, interfaces o métodos para representar un tipo de dato que no se conoce de antemano. En lugar de fijar un tipo concreto como int o String, se emplea un identificador (habitualmente una letra mayúscula como T, E o K) que actúa como una variable de tipo. Este mecanismo permite que una misma lógica de programación sea válida para múltiples tipos, posponiendo la especificación del dato real hasta el momento en que se declara o se instancia el componente.
+
+Cuando se utiliza un parámetro de tipo, se establece un contrato de homogeneidad que el compilador se encarga de supervisar. Por ejemplo, al declarar una clase como Contenedor<T>, esa T se convierte en el tipo de referencia para todos los métodos internos. Si se intenta añadir un objeto que no coincida con el tipo asignado a T durante la instanciación, el compilador generará un error de forma inmediata. Esto elimina la ambigüedad que existía con el uso de Object, proporcionando una estructura robusta y legible.
+
+En la práctica, la sustitución de estos parámetros ocurre mediante un proceso denominado instanciación de tipos. Si se crea un Contenedor<String>, el compilador sustituye virtualmente cada aparición de T por String para esa instancia específica. Es importante destacar que, en Java, estos parámetros solo pueden ser sustituidos por tipos de referencia (clases), por lo que para usar tipos primitivos se debe recurrir a sus clases de envoltura, manteniendo así la coherencia con el modelo de objetos del lenguaje.
+
+Este enfoque transforma la manera en que se diseñan las librerías de software. Gracias a los parámetros de tipo, es posible escribir algoritmos de ordenación, búsqueda o estructuras de almacenamiento complejas que son totalmente independientes del dato contenido, pero que garantizan que, una vez extraído el dato, este tendrá el tipo exacto esperado sin necesidad de realizar conversiones manuales ni comprobaciones de seguridad adicionales en tiempo de ejecución.
+
+## 5. En Java existe "generics", en C++ existen "templates". Pon un ejemplo de uso de programación genérica en ambos, instanciando una lista o vector dinámico que solo admite `String`. Introduce valores, y luego haz un recorrido de ellos mostrando cómo cada elemento es del tipo concreto con seguridad.
+
+### Respuesta
+
+En C++, la programación genérica se articula a través de las plantillas (templates). Al utilizar la clase std::vector<std::string>, se le indica al compilador que genere código específico para manejar objetos de tipo cadena. La seguridad de tipos es absoluta; si se intentara insertar un entero en este vector, el compilador detendría el proceso. Al recuperar los elementos, el lenguaje garantiza que cada ítem es un std::string, permitiendo invocar sus métodos directamente sin necesidad de conversiones manuales de punteros.
+
+Ejemplo conceptual en C++:
+
+C++
+#include <vector>
+#include <string>
+#include <iostream>
+
+// Uso de templates en C++
+std::vector<std::string> lista;
+lista.push_back("Hola");
+lista.push_back("Mundo");
+
+// El iterador sabe que 's' es de tipo std::string
+for (const std::string& s : lista) {
+    std::cout << s << " (Longitud: " << s.length() << ")" << std::endl;
+}
+En Java, el mecanismo de Generics permite parametrizar la clase ArrayList con el tipo String. Al declarar ArrayList<String>, se establece una restricción que el compilador verifica estrictamente: solo se permiten instancias de la clase especificada. Una ventaja fundamental respecto al uso de Object es que, al iterar sobre la colección, el programador recibe directamente objetos del tipo String. Esto elimina la verbosidad de las conversiones de tipo (casting) y asegura que el código sea mucho más limpio y menos propenso a errores en tiempo de ejecución.
+
+Ejemplo conceptual en Java:
+
+Java
+import java.util.ArrayList;
+
+// Uso de Generics en Java
+ArrayList<String> lista = new ArrayList<>();
+lista.add("Java");
+lista.add("Genérico");
+
+// El bucle for-each trata a 's' como String directamente
+for (String s : lista) {
+    // Se accede a métodos de String con total seguridad
+    System.out.println(s.toUpperCase() + " tiene " + s.length() + " letras");
+}
+Ambos ejemplos ilustran cómo la genericidad permite que una misma estructura de datos (un vector o una lista) se especialice para un tipo concreto. Mientras que en C++ las plantillas generan código nuevo para cada tipo (monomorfización), en Java los genéricos proporcionan principalmente azúcar sintáctico y seguridad en la compilación, pero ambos logran el mismo objetivo desde la perspectiva del desarrollador: reutilización de código con tipado fuerte y seguridad garantizada antes de que el programa llegue a ejecutarse.
+
+## 6. Sobre el funcionamiento de la programación genérica. ¿Qué hace el compilador cuando se instancia una clase que tiene parámetros de tipo? ¿Hace lo mismo C++ y Java? ¿Qué es el "type erasure" de Java y la "instanciación de plantillas" de C++?
+
+### Respuesta
+
+Aunque ambos lenguajes persiguen el mismo fin, sus compiladores operan de formas radicalmente opuestas. En C++, el proceso se denomina instanciación de plantillas. Cuando el compilador detecta una clase parametrizada, como Vector<int> y Vector<double>, genera físicamente dos copias distintas del código fuente en lenguaje de máquina, una para cada tipo. Este enfoque, conocido como monomorfización, optimiza el rendimiento al máximo, ya que cada versión del código está adaptada específicamente al tamaño y las operaciones del tipo de dato concreto.
+
+En contraposición, Java utiliza un mecanismo llamado borrado de tipos (type erasure). El compilador de Java no genera nuevas clases para cada tipo; en su lugar, traduce todos los tipos parametrizados a su límite superior (generalmente Object) y añade conversiones de tipo automáticas y seguras donde es necesario. Esto significa que, tras la compilación, la información sobre los genéricos desaparece del código de bytes (bytecode). Este diseño se eligió principalmente para mantener la compatibilidad hacia atrás con versiones antiguas de Java que no soportaban genéricos.
+
+La principal diferencia radica en cuándo y cómo se gestiona la genericidad. En C++, la existencia de múltiples copias de código puede aumentar el tamaño del binario (fenómeno conocido como code bloat), pero ofrece una ejecución extremadamente rápida. En Java, solo existe una única copia de la clase en memoria para todas las instanciaciones, lo que ahorra espacio, pero impone ciertas restricciones, como la imposibilidad de usar tipos primitivos directamente o de crear instancias de los parámetros de tipo (no se puede hacer new T()).
+
+En resumen, mientras que C++ crea una especialización real en tiempo de compilación para cada uso, Java utiliza los genéricos como una capa de seguridad sintáctica. El compilador de Java garantiza que el programador no cometa errores de bulto con los tipos, pero una vez asegurada la coherencia del programa, "borra" esa información para que la Máquina Virtual de Java (JVM) procese los objetos de forma uniforme como si fueran referencias generales.
+
+## 7. Vamos a crear una nueva clase con parámetros de tipo. Define en Java una clase `Par`, que permite alojar dos valores de tipos diferentes. Incluye un constructor y un getter para cada tipo. Pon un ejemplo de uso de ese `Par`, por ejemplo para especificar el tipo de retorno de una función que devuelve en un `Par` la media y desviación típica de un array de `double`. 
+
+### Respuesta
+
+Para implementar una clase genérica con múltiples parámetros de tipo en Java, se definen los identificadores entre corchetes angulares tras el nombre de la clase. En este caso, la clase Par<T, U> utiliza dos variables de tipo independientes, lo que permite que cada atributo sea de una naturaleza distinta. Esta estructura es fundamental para superar la limitación de los métodos de Java, que nativamente solo pueden devolver un único valor, permitiendo agrupar resultados heterogéneos bajo una misma entidad con total seguridad de tipos.
+
+Java
+public class Par<T, U> {
+    private final T primero;
+    private final U segundo;
+
+    public Par(T primero, U segundo) {
+        this.primero = primero;
+        this.segundo = segundo;
+    }
+
+    public T getPrimero() { return primero; }
+    public U getSegundo() { return segundo; }
+}
+En el ejemplo solicitado, se utiliza la clase Par para encapsular dos resultados estadísticos calculados sobre un array de números. Al declarar el método como Par<Double, Double>, se garantiza que el objeto resultante contendrá específicamente dos valores numéricos. Esto resulta mucho más profesional y seguro que devolver un array de double de dos posiciones, ya que el uso de nombres de métodos como getPrimero() y getSegundo() (o idealmente getMedia() y getDesviacion()) aporta una semántica clara y evita errores por confusión de índices.
+
+Java
+public static Par<Double, Double> calcularEstadisticas(double[] datos) {
+    double suma = 0;
+    for (double d : datos) suma += d;
+    double media = suma / datos.length;
+
+    double sumaCuadrados = 0;
+    for (double d : datos) sumaCuadrados += Math.pow(d - media, 2);
+    double desviacion = Math.sqrt(sumaCuadrados / datos.length);
+
+    return new Par<>(media, desviacion);
+}
+
+// Ejemplo de uso:
+Par<Double, Double> resultado = calcularEstadisticas(new double[]{10.0, 20.0, 30.0});
+System.out.println("Media: " + resultado.getPrimero());
+System.out.println("Desviación: " + resultado.getSegundo());
+Es importante notar el uso del operador diamante <> en el momento de la instanciación dentro del método. A partir de Java 7, no es necesario repetir los tipos en el constructor si estos pueden ser inferidos por el compilador a partir de la declaración de retorno. Este mecanismo simplifica la sintaxis sin perder la robustez del tipado fuerte, asegurando que cualquier intento de asignar el resultado a un tipo incompatible sea detectado antes de la ejecución.
+
+## 8. En Java, se pueden declarar parámetros de tipo también a nivel de método, no solo a nivel de clase. Pon un ejemplo con un método genérico `seleccionaUno`, que pasados dos objetos del mismo tipo, te devuelva aleatoriamente uno de ellos. Muestra la diferencia de definirlo con dos `Object`, a definirlo con dos parámetros de tipo, en terminos de (i) evitar downcasting y (ii) forzar que ambos objetos sean del mismo tipo. 
+
+### Respuesta
+
+Un método genérico se distingue por declarar sus parámetros de tipo justo antes del tipo de retorno en la firma del método. A diferencia de la genericidad a nivel de clase, esta técnica permite que métodos individuales dentro de una clase (incluso si la clase no es genérica) operen de forma flexible con diferentes tipos de datos, manteniendo la seguridad que el compilador proporciona.
+
+Java
+public class Utilidades {
+    // Método genérico con parámetro de tipo <T>
+    public static <T> T seleccionaUno(T obj1, T obj2) {
+        return Math.random() > 0.5 ? obj1 : obj2;
+    }
+
+    // Método no genérico usando Object
+    public static Object seleccionaUnoObject(Object obj1, Object obj2) {
+        return Math.random() > 0.5 ? obj1 : obj2;
+    }
+}
+Respecto a la evitación del downcasting (i), el método genérico devuelve exactamente el tipo T que se le pasa. Si se invocan con dos String, el compilador "sabe" que el resultado es un String, permitiendo asignar el retorno directamente a una variable de ese tipo o llamar a sus métodos específicos. Por el contrario, con la versión de Object, el programador se ve obligado a realizar una conversión manual (por ejemplo, (String) seleccionaUnoObject(...)), lo que introduce el riesgo de errores en tiempo de ejecución.
+
+En cuanto a forzar que ambos objetos sean del mismo tipo (ii), la genericidad establece un contrato de homogeneidad que el uso de Object ignora por completo. Al usar <T>, el compilador exige que ambos argumentos compartan una base común coherente; si se intenta pasar un Integer y un String, el compilador buscará el ancestro común más cercano o emitirá un error si la ambigüedad rompe la lógica del programa. La versión con Object, en cambio, aceptaría cualquier combinación (como un perro y una bicicleta), trasladando el problema de la incoherencia de datos a las fases posteriores de la ejecución.
+
+En resumen, la definición con parámetros de tipo transforma al compilador en un aliado que garantiza la integridad de los datos. Mientras que la aproximación basada en Object es permisiva y peligrosa, el método genérico seleccionaUno(T, T) asegura que lo que sale es de la misma naturaleza que lo que entra, eliminando la necesidad de código de comprobación adicional y mejorando la legibilidad del sistema.
+
+## 9. ¿Se pueden establecer restricciones en los parámetros de tipo? Por ejemplo, si quiero definir un tipo genérico `<T>`, ¿puedo decir que tenga que ser, al menos, un número para poder tratarlo como tal? Pon un ejemplo en Java de un `Punto` con dos coordenadas, metodos `getX`, `getY`, y una función `calcularDistanciaA` otro `Punto`. Permite que esas coordenadas sean cualquier tipo de número. Pon dos soluciones: una simplemente creando coordenadas de tipo `Number` y otra añadiendo generics para reforzar el chequeo de tipos y saber exactamente con qué tipo de número trabaja el `Punto`. En este caso y respecto al "type erasure", ¿cuál es el tipo final tras la compilación?
+
+### Respuesta
+
+Efectivamente, en Java es posible establecer restricciones mediante el uso de parámetros de tipo acotados (bounded type parameters). Utilizando la palabra reservada extends, se puede definir un límite superior para el parámetro, obligando a que el tipo proporcionado sea una clase específica o una subclase de esta. Al declarar <T extends Number>, el compilador garantiza que cualquier objeto tratado como T poseerá los métodos de la clase Number (como doubleValue()), permitiendo realizar operaciones matemáticas que no estarían disponibles con un genérico sin restringir.
+
+La primera solución propuesta utiliza la clase abstracta Number directamente. Este enfoque permite almacenar cualquier valor numérico, pero sufre del mismo problema que el uso de Object: se pierde la información del tipo concreto. Si se crea un Punto con coordenadas Integer, al recuperarlas se obtendrán referencias de tipo Number, y no se podrá impedir que un método mezcle accidentalmente un Punto de enteros con uno de flotantes si no se realizan comprobaciones manuales.
+
+Java
+// Solución 1: Uso de polimorfismo clásico con Number
+public class PuntoNumber {
+    private Number x, y;
+    public PuntoNumber(Number x, Number y) { this.x = x; this.y = y; }
+    public Number getX() { return x; }
+    public Number getY() { return y; }
+
+    public double calcularDistanciaA(PuntoNumber otro) {
+        double dx = this.x.doubleValue() - otro.x.doubleValue();
+        double dy = this.y.doubleValue() - otro.y.doubleValue();
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+}
+La segunda solución emplea genericidad acotada. Aquí, PuntoGenérico<T extends Number> asegura que todas las coordenadas sean del mismo tipo específico T. Esto refuerza el chequeo de tipos: si se define un método que solo acepte distancias entre puntos del mismo tipo (por ejemplo, PuntoGenerico<T>), el compilador evitará que se comparen erróneamente coordenadas de distinta precisión o naturaleza, manteniendo la integridad semántica del objeto.
+
+Java
+// Solución 2: Uso de genéricos acotados
+public class PuntoGenerico<T extends Number> {
+    private T x, y;
+    public PuntoGenerico(T x, T y) { this.x = x; this.y = y; }
+    public T getX() { return x; }
+    public T getY() { return y; }
+
+    public double calcularDistanciaA(PuntoGenerico<T> otro) {
+        double dx = this.x.doubleValue() - otro.getX().doubleValue();
+        double dy = this.y.doubleValue() - otro.getY().doubleValue();
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+}
+Respecto al borrado de tipos (type erasure), el comportamiento cambia cuando existe una restricción. Mientras que un parámetro <T> sin acotar se traduce internamente a Object, un parámetro acotado como <T extends Number> se traduce a su límite superior, en este caso Number. Por tanto, tras la compilación, el código de bytes sustituye todas las instancias de T por Number e inserta los casts necesarios hacia el tipo específico solicitado por el programador en el código fuente.
+
+## 10. Sobre las soluciones anteriores. Si bien ambas permiten trabajar con distintos tipos de número sin duplicar la clase `Punto`, reflexiona sobre el refuerzo del chequeo de tipos con generics. ¿Permiten ambas crear un punto con una coordenada de tipo entero y la otra coordenada de tipo real? ¿Qué tipo devuelve el `getX` con la solucion sin generics y qué tipo devuelve el que tiene la solución con generics?
+
+### Respuesta
+
+La diferencia fundamental entre ambas soluciones radica en la flexibilidad frente a la homogeneidad. En la solución sin genéricos (usando Number directamente), es perfectamente posible crear un punto donde una coordenada sea un Integer y la otra un Double. Esto sucede porque el array o los atributos simplemente esperan cualquier cosa que "sea un" Number. Aunque esto parece una ventaja, en realidad debilita la estructura del objeto, ya que permite estados inconsistentes que el programador podría no haber previsto, como mezclar precisiones numéricas distintas en un mismo eje de coordenadas.
+
+Por el contrario, la solución con genéricos <T extends Number> impone una restricción de coherencia interna. Al instanciar la clase como PuntoGenerico<Integer>, el parámetro T queda fijado como Integer para toda la instancia. Por lo tanto, el constructor obligará a que tanto x como y sean del mismo tipo específico. Si se intentara pasar un entero y un real, el compilador detectaría la inconsistencia y detendría la construcción, asegurando que el punto sea tipológicamente puro y evitando sorpresas durante cálculos matemáticos complejos.
+
+Respecto al tipo de retorno de los métodos getX y getY, la distinción tiene un impacto directo en la ergonomía del código:
+
+Sin genéricos: El método getX() devuelve siempre una referencia de tipo Number. Si se necesita utilizar un método específico de la subclase (por ejemplo, para obtener el valor en coma flotante de un Float con precisión específica), se requeriría un downcasting manual.
+
+Con genéricos: El método getX() devuelve exactamente el tipo T. Si se ha instanciado como PuntoGenerico<Double>, el receptor obtiene un Double directamente. Esto elimina la necesidad de conversiones y permite al compilador realizar comprobaciones de seguridad adicionales sobre el valor recuperado.
+
+En conclusión, mientras que la solución basada en la herencia simple de Number es más permisiva y "laxa", la solución con programación genérica refuerza el contrato de la clase. La genericidad no solo evita la duplicación de código, sino que dota al objeto de una identidad de tipo precisa que sobrevive a la compilación gracias a las inserciones automáticas de casts que realiza el proceso de type erasure, garantizando que el programador siempre trabaje con el tipo de dato exacto que definió originalmente.
+
+## 11. Hagamos un ejemplo avanzado. El siguiente código, con interfaz `Punto`, que define un método `calcularDistanciaA(Punto p)`, junto con las implementaciones `Punto2D` y `Punto3D`. Añade generics para asegurarnos que la sobreescritura del método calcular distancia a otro `Punto` siempre es sobre un `Punto` del mismo tipo, evitando `instanceof` y el downcasting.
+```java
+public interface Punto { 
+    public double distanciaA(Punto p); 
+} 
+
+public class Punto2D implements Punto { 
+     private final double x, y; 
+     public Punto2D(double x, double y) { 
+        this.x = x; this.y = y; 
+    } 
+
+    @Override 
+    public double distanciaA(Punto p) { 
+        if (p instanceof Punto2D) { 
+            Punto2D p2d = (Punto2D) p; 
+            return Math.sqrt(Math.pow(x - p2d.x, 2) 
+                    + Math.pow(y - p2d.y, 2)); 
+        } else { 
+            throw new RuntimeException("p debe ser Punto 2D"); 
+        } 
+    } 
+} 
+public class Punto3D implements Punto { 
+    // Igual que Punto2D, pero con tres coordenadas
+    ...
+} 
+```
+
+### Respuesta
+
+## 11. Hagamos un ejemplo avanzado. El siguiente código, con interfaz `Punto`, que define un método `calcularDistanciaA(Punto p)`, junto con las implementaciones `Punto2D` y `Punto3D`. Añade generics para asegurarnos que la sobreescritura del método calcular distancia a otro `Punto` siempre es sobre un `Punto` del mismo tipo, evitando `instanceof` y el downcasting.
+
+```java
+
+public interface Punto { 
+
+    public double distanciaA(Punto p); 
+
+} 
+
+
+
+public class Punto2D implements Punto { 
+
+     private final double x, y; 
+
+     public Punto2D(double x, double y) { 
+
+        this.x = x; this.y = y; 
+
+    } 
+
+
+
+    @Override 
+
+    public double distanciaA(Punto p) { 
+
+        if (p instanceof Punto2D) { 
+
+            Punto2D p2d = (Punto2D) p; 
+
+            return Math.sqrt(Math.pow(x - p2d.x, 2) 
+
+                    + Math.pow(y - p2d.y, 2)); 
+
+        } else { 
+
+            throw new RuntimeException("p debe ser Punto 2D"); 
+
+        } 
+
+    } 
+
+} 
+
+public class Punto3D implements Punto { 
+
+    // Igual que Punto2D, pero con tres coordenadas
+
+    ...
+
+} 
+
+```
+
+Para lograr que el método de distancia solo acepte puntos de la misma clase, se debe recurrir a la genericidad recursiva. Al definir la interfaz como Punto<T>, se utiliza el parámetro de tipo T para representar el tipo específico de punto con el que se desea interactuar. De esta forma, el contrato de la interfaz deja de ser genérico sobre "cualquier punto" y pasa a ser específico sobre "un tipo de punto T", eliminando la necesidad de verificar el tipo en tiempo de ejecución.
+
+En la implementación, se utiliza una técnica denominada Curiously Recurring Template Pattern (aunque es un término más común en C++), donde la clase se implementa a sí misma como el parámetro de tipo: class Punto2D implements Punto<Punto2D>. Esto obliga a que el método distanciaA reciba estrictamente un objeto de tipo Punto2D, permitiendo acceder a sus atributos privados (como x e y) directamente, sin usar instanceof ni realizar downcasting.
+
+Java
+public interface Punto<T> { 
+    public double distanciaA(T p); 
+} 
+
+public class Punto2D implements Punto<Punto2D> { 
+    private final double x, y; 
+    
+    public Punto2D(double x, double y) { 
+        this.x = x; this.y = y; 
+    } 
+
+    @Override 
+    public double distanciaA(Punto2D p) { 
+        // Ya no se requiere instanceof ni casting manual
+        return Math.sqrt(Math.pow(x - p.x, 2) + Math.pow(y - p.y, 2)); 
+    } 
+} 
+
+public class Punto3D implements Punto<Punto3D> { 
+    private final double x, y, z;
+
+    public Punto3D(double x, double y, double z) {
+        this.x = x; this.y = y; this.z = z;
+    }
+
+    @Override 
+    public double distanciaA(Punto3D p) { 
+        return Math.sqrt(Math.pow(x - p.x, 2) + Math.pow(y - p.y, 2) + Math.pow(z - p.z, 2)); 
+    } 
+}
+Esta solución es significativamente más robusta porque traslada la validación al tiempo de compilación. Si un programador intentara calcular la distancia entre un Punto2D y un Punto3D, el compilador generaría un error de inmediato, ya que la firma del método en Punto2D exige un objeto de su misma clase. Así se garantiza la integridad lógica del sistema y se evitan las excepciones en tiempo de ejecución que antes eran necesarias para manejar tipos incompatibles.
+
+## 12. Dado que `String` es subtipo de `Object`, ¿significa eso que `List<String>` es subtipo de `List<Object>`? ¿Y que `String[]` es subtipo de `Object[]`? Razona por qué la respuesta es diferente en cada caso y qué problema en tiempo de ejecución puede aparecer con los arrays. A partir de estos ejemplos, define qué significa que un tipo genérico sea **covariante**, **contravariante** o **invariante** respecto a su parámetro de tipo.
+
+### Respuesta
+
+La relación de herencia entre tipos simples no se traslada automáticamente a sus versiones estructuradas en Java. Aunque String sea un subtipo de Object, List<String> no es subtipo de List<Object>. Esta propiedad se denomina invarianza. Java define los genéricos como invariantes para proteger la integridad de las colecciones; si se permitiera tratar una lista de cadenas como una de objetos, se podría insertar accidentalmente un Integer en ella, rompiendo la garantía de que la lista solo contiene cadenas y provocando fallos al intentar recuperar los datos.
+
+En cambio, los arrays en Java se comportan de forma distinta: String[] sí es subtipo de Object[]. Esta característica se conoce como covarianza. Aunque esto permite una mayor flexibilidad inicial, introduce un riesgo crítico en tiempo de ejecución. Si se referencia un array de cadenas a través de una variable de tipo Object[], el compilador permitiría intentar guardar un objeto Double en él. Sin embargo, al ejecutar el programa, la Máquina Virtual de Java detectará que el array real solo admite cadenas y lanzará una excepción de tipo ArrayStoreException.
+
+A partir de estos comportamientos, se pueden definir formalmente los conceptos de varianza:
+
+Invariante: Significa que no existe relación de herencia entre los contenedores, independientemente de la jerarquía de sus elementos. List<A> y List<B> son tipos totalmente distintos aunque B herede de A. Los genéricos en Java son, por defecto, invariantes.
+
+Covariante: Significa que la relación de herencia se mantiene en la misma dirección. Si B es subtipo de A, entonces Contenedor<B> es subtipo de Contenedor<A>. Esto es lo que ocurre con los arrays.
+
+Contravariante: Es la relación inversa. Si B es subtipo de A, entonces Contenedor<A> se considera un subtipo de Contenedor<B>. En Java, esto se logra mediante comodines (wildcards) como <? super T>, permitiendo que una estructura acepte tipos que sean ancestros de T.
+
+En resumen, la invarianza de los genéricos es una decisión de diseño para garantizar la seguridad de tipos en tiempo de compilación, evitando los errores de almacenamiento que los arrays solo pueden detectar cuando el programa ya se está ejecutando. Esta distinción es fundamental para entender por qué Java trata las colecciones genéricas con tanta rigurosidad comparado con los arrays primitivos heredados de versiones iniciales del lenguaje.
+
+## 13. Java permite recuperar covarianza y contravarianza en tipos genéricos de forma controlada mediante **wildcards**. ¿Qué es un wildcard (`?`)? Muestra la diferencia entre `List<? extends T>` y `List<? super T>`, indicando en qué casos se usa cada uno. Pon dos ejemplos: (i) un método que reciba una lista de números y calcule su suma, usando `? extends`; (ii) un método que reciba una lista y le añada varios números enteros, usando `? super`.
+
+### Respuesta
+
+Un wildcard o comodín, representado por el símbolo ?, es un mecanismo en Java que permite expresar una jerarquía entre tipos genéricos, flexibilizando la invarianza natural de las colecciones. A diferencia de un parámetro de tipo fijo (T), el comodín indica que el tipo es desconocido o que puede variar dentro de un rango específico. Esto permite que un método acepte una variedad de listas relacionadas, aumentando significativamente la reutilización del código.
+
+La principal diferencia radica en la dirección de la jerarquía y las operaciones permitidas (lectura o escritura). List<? extends T> (límite superior) permite que la lista sea de cualquier tipo que herede de T. Se utiliza para escenarios de lectura, ya que el compilador garantiza que cualquier elemento extraído será, como mínimo, un objeto de tipo T. Por el contrario, List<? super T> (límite inferior) permite que la lista sea de un tipo que sea ancestro de T. Se utiliza para escenarios de escritura, asegurando que es seguro añadir objetos de tipo T a la colección.
+
+A continuación se presentan los ejemplos solicitados:
+
+(i) Uso de ? extends para lectura (Suma de números):
+
+Java
+public static double sumarLista(List<? extends Number> lista) {
+    double total = 0.0;
+    for (Number n : lista) {
+        total += n.doubleValue(); // Es seguro leer como Number
+    }
+    return total;
+}
+// Este método acepta List<Integer>, List<Double>, List<Float>, etc.
+(ii) Uso de ? super para escritura (Añadir enteros):
+
+Java
+public static void añadirEnteros(List<? super Integer> lista) {
+    lista.add(10);
+    lista.add(20);
+    lista.add(30);
+    // Es seguro añadir Integer porque la lista es de Integer o de un ancestro (como Number u Object)
+}
+// Este método acepta List<Integer>, List<Number> o List<Object>.
+Para recordar cuándo usar cada uno, se emplea frecuentemente la regla PECS (Producer Extends, Consumer Super). Si la estructura de datos actúa como un "productor" de elementos (solo se lee de ella), se debe usar extends. Si la estructura actúa como un "consumidor" (se escribe o añaden datos en ella), se debe usar super. Este control preciso permite recuperar la flexibilidad del polimorfismo sin introducir los riesgos de errores en tiempo de ejecución que caracterizan a los arrays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
